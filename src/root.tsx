@@ -4,7 +4,7 @@ import {
   RouterOutlet,
   ServiceWorkerRegister,
 } from "@builder.io/qwik-city";
-import { RouterHead } from "./components/router-head/router-head";
+import { RouterHead } from "./components/common/Head";
 
 import "./global.css";
 
@@ -24,7 +24,7 @@ export default component$(() => {
         <RouterHead />
         <ServiceWorkerRegister />
       </head>
-      <body lang="en">
+      <body lang="en" class="font-geist flex min-h-full flex-col">
         <RouterOutlet />
       </body>
     </QwikCityProvider>
