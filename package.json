@@ -62,6 +62,7 @@
     "@tanstack/qwik-table": "^8.15.3",
     "framer-motion": "^11.0.25",
     "mini-svg-data-uri": "^1.4.4",
+    "qwik-sonner": "^0.3.3",
     "tailwind-merge": "^2.2.2"
   }
 }

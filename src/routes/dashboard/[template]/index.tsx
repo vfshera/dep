@@ -1,5 +1,6 @@
 import { component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { routeLoader$ } from "@builder.io/qwik-city";
+import { toast } from "qwik-sonner";
 // import { useQwikTable } from "@tanstack/qwik-table";
 
 import scripts from "~/scripts";
@@ -18,6 +19,7 @@ export const useTemplate = routeLoader$(({ params, status }) => {
 
 export default component$(() => {
   const streamResponse = useSignal<ScriptYield[]>([]);
+
   const IsDone = useComputed$(() => {
     if (!streamResponse.value.length) {
       return false;
@@ -25,6 +27,7 @@ export default component$(() => {
 
     return streamResponse.value[streamResponse.value.length - 1].type === "END";
   });
+
   const t = useTemplate();
 
   if (!t.value) {
@@ -55,6 +58,22 @@ export default component$(() => {
               });
 
               for await (const i of res) {
+                if (i.type === "START") {
+                  toast("🚀 " + i.value);
+                }
+
+                if (i.type === "END") {
+                  toast.success(i.value);
+                }
+
+                if (i.type === "INFO") {
+                  toast.info(i.value);
+                }
+
+                if (i.type === "ERROR") {
+                  toast.error(i.value);
+                }
+
                 streamResponse.value = [...streamResponse.value, i];
               }
             }}
@@ -76,19 +95,27 @@ export default component$(() => {
           </button>
         </div>
 
-        <div class="flex-1  rounded bg-[#111] px-3 py-5">
+        <div class="flex-1 rounded bg-[#111] px-3 py-5">
           <ul>
             {streamResponse.value.map((s, i) => (
-              <li key={i + s.value} class="block">
+              <li
+                key={i + s.value}
+                class={cn(
+                  "block",
+                  s.type === "INFO" && "mt-2",
+                  !IsDone.value && "last:animate-pulse",
+                )}
+              >
                 <pre
                   class={cn(
                     "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
-                    s.type === "INFO" && "text-blue-600",
-                    s.type === "ERROR" && "text-red-600",
-                    !IsDone.value && "last:animate-pulse",
+                    s.type === "INFO" && "font-medium text-blue-400",
+                    s.type === "ERROR" && "text-red-500",
                   )}
                 >
-                  {s.value}
+                  {s.type === "START" && "🚀 "}
+                  {s.type === "END" && "✅ "}
+                  {s.type === "INFO" ? `[${s.value}]` : s.value}
                 </pre>
               </li>
             ))}

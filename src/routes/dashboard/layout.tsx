@@ -1,6 +1,7 @@
 import { Slot, component$ } from "@builder.io/qwik";
 import Nav from "./Nav";
 import { type DocumentHead } from "@builder.io/qwik-city";
+import { Toaster } from "qwik-sonner";
 
 export default component$(() => {
   return (
@@ -8,6 +9,8 @@ export default component$(() => {
       <Nav />
 
       <Slot />
+
+      <Toaster expand richColors />
     </main>
   );
 });
