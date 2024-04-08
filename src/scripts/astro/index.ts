@@ -4,7 +4,9 @@ import sh from "~/lib/shell";
 import { type RequestEvent, server$ } from "@builder.io/qwik-city";
 import path from "path";
 
-export default function (): DeployScript<{ branch?: string }> {
+export default function (): DeployScript<{
+  branch?: string;
+}> {
   return {
     id: "astro-dep-v1",
     name: "Astro",
@@ -24,6 +26,11 @@ export default function (): DeployScript<{ branch?: string }> {
 
       const WORKING_DIR = path.join(BASE_DIR, args.WORKING_DIR);
 
+      const options: sh.SpawnOptionsWithoutStdio = {
+        cwd: WORKING_DIR,
+        shell: true,
+      };
+
       yield u.start("Deploying Astro Project...");
 
       /**
@@ -31,10 +38,7 @@ export default function (): DeployScript<{ branch?: string }> {
        */
       yield u.info(`Getting latest changes from the '${branch}' branch`);
 
-      const git = sh.spawn("git", ["pull", "origin", branch], {
-        cwd: WORKING_DIR,
-        shell: true,
-      });
+      const git = sh.spawn("git", ["pull", "origin", branch], options);
 
       for await (const data of git.stdout) {
         yield u.data((data.toString() as string).trim());
@@ -53,10 +57,7 @@ export default function (): DeployScript<{ branch?: string }> {
        */
       yield u.info(`Installing Dependencies`);
 
-      const install = sh.spawn("npm", ["install"], {
-        cwd: WORKING_DIR,
-        shell: true,
-      });
+      const install = sh.spawn("npm", ["install"], options);
 
       for await (const data of install.stdout) {
         yield u.data((data.toString() as string).trim());
@@ -75,10 +76,7 @@ export default function (): DeployScript<{ branch?: string }> {
        */
       yield u.info(`Building Project`);
 
-      const build = sh.spawn("npm", ["run", "build"], {
-        cwd: WORKING_DIR,
-        shell: true,
-      });
+      const build = sh.spawn("npm", ["run", "build"], options);
 
       for await (const data of build.stdout) {
         yield u.data((data.toString() as string).trim());
