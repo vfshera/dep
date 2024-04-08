@@ -1,11 +1,10 @@
 import { type DeployScript } from "~/types";
+import * as u from "../utils";
 import sh from "~/lib/shell";
 import { type RequestEvent, server$ } from "@builder.io/qwik-city";
 import path from "path";
 
-const BUILD_CMD = "npm run build";
-
-export default function (): DeployScript<{}> {
+export default function (): DeployScript<{ branch?: string }> {
   return {
     id: "astro",
     name: "Astro",
@@ -13,6 +12,7 @@ export default function (): DeployScript<{}> {
     handler: server$(async function* (args) {
       // @ts-ignore
       const { env } = this as RequestEvent;
+      const branch = args.branch ?? "main";
 
       const BASE_DIR = env.get("CMD_WORKING_DIR");
 
@@ -24,37 +24,75 @@ export default function (): DeployScript<{}> {
 
       const WORKING_DIR = path.join(BASE_DIR, args.WORKING_DIR);
 
-      yield { type: "START", value: "Deploying Astro Project..." };
+      yield u.start("Deploying Astro Project...");
 
-      const build = sh.spawn(
-        "npm",
-        [
-          "install",
-          "&&",
-          "echo",
-          "'Building Project...'",
-          "&&",
-          ...BUILD_CMD.split(" "),
-        ],
-        {
-          cwd: WORKING_DIR,
-          shell: true,
-        },
-      );
+      /**
+       *  git pull
+       */
+      yield u.info(`Getting latest changes from ${branch} branch..`);
+
+      const git = sh.spawn("git", ["pull", "origin", branch], {
+        cwd: WORKING_DIR,
+        shell: true,
+      });
+
+      for await (const data of git.stdout) {
+        yield u.data((data.toString() as string).trim());
+      }
+
+      for await (const data of git.stderr) {
+        yield u.error((data.toString() as string).trim());
+      }
+
+      git.on("exit", (code) => {
+        console.log(`[git]: Child exited with code ${code}`);
+      });
+
+      /**
+       *  npm install
+       */
+      yield u.info(`Installing Dependencies:`);
+
+      const install = sh.spawn("npm", ["install"], {
+        cwd: WORKING_DIR,
+        shell: true,
+      });
+
+      for await (const data of install.stdout) {
+        yield u.data((data.toString() as string).trim());
+      }
+
+      for await (const data of install.stderr) {
+        yield u.error((data.toString() as string).trim());
+      }
+
+      install.on("exit", (code) => {
+        console.log(`[npm install]: Child exited with code ${code}`);
+      });
+
+      /**
+       *  npm run build
+       */
+      yield u.info(`Building Astro Project:`);
+
+      const build = sh.spawn("npm", ["run", "build"], {
+        cwd: WORKING_DIR,
+        shell: true,
+      });
 
       for await (const data of build.stdout) {
-        yield { type: "DATA", value: (data.toString() as string).trim() };
+        yield u.data((data.toString() as string).trim());
       }
 
       for await (const data of build.stderr) {
-        yield { type: "ERROR", value: (data.toString() as string).trim() };
+        yield u.error((data.toString() as string).trim());
       }
 
       build.on("exit", (code) => {
-        console.log(`Child exited with code ${code}`);
+        console.log(`[npm build]:  Child exited with code ${code}`);
       });
 
-      yield { type: "END", value: "Done!" };
+      yield u.end("Done!");
     }),
   };
 }
