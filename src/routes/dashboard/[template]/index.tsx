@@ -1,34 +1,14 @@
-import { component$, useComputed$, useSignal } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
-import { toast } from "qwik-sonner";
+import { component$ } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
+import { useTemplate } from "./loaders";
 // import { useQwikTable } from "@tanstack/qwik-table";
 
-import scripts from "~/scripts";
-import { type ScriptYield } from "~/types";
-import { cn } from "~/utils";
-
-export const useTemplate = routeLoader$(({ params, status }) => {
-  const template = scripts.find((s) => s.id === params.template);
-
-  if (!template) {
-    status(404);
-  }
-
-  return template;
-});
+import { useProjects } from "./loaders";
+export { useProjects } from "./loaders";
 
 export default component$(() => {
-  const streamResponse = useSignal<ScriptYield[]>([]);
-
-  const IsDone = useComputed$(() => {
-    if (!streamResponse.value.length) {
-      return false;
-    }
-
-    return streamResponse.value[streamResponse.value.length - 1].type === "END";
-  });
-
   const t = useTemplate();
+  const projects = useProjects();
 
   if (!t.value) {
     return (
@@ -37,91 +17,25 @@ export default component$(() => {
       </div>
     );
   }
-
   return (
-    <div class="grid flex-1 grid-cols-[350px,1fr]">
-      <div class="p-5">
-        <div class="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
-          <p class="font-semibold">{t.value.name} Template</p>
-          <p class="mt-2 text-sm text-gray-600">{t.value.description}</p>
-        </div>
-      </div>
+    <div class="space-y-5 ">
+      <h1 class="text-2xl font-semibold">Projects</h1>
 
-      <div class="flex flex-col gap-5 p-5">
-        <div>
-          <button
-            class="flex items-center gap-1 rounded-lg bg-black p-2 pl-4 pr-5 text-white"
-            onClick$={async () => {
-              streamResponse.value = [];
-              const res = await t.value.handler({
-                WORKING_DIR: "astro-suspense",
-              });
-
-              for await (const i of res) {
-                if (i.type === "START") {
-                  toast("🚀 " + i.value);
-                }
-
-                if (i.type === "END") {
-                  toast.success(i.value);
-                }
-
-                if (i.type === "INFO") {
-                  toast.info(i.value);
-                }
-
-                if (i.type === "ERROR") {
-                  toast.error(i.value);
-                }
-
-                streamResponse.value = [...streamResponse.value, i];
-              }
-            }}
+      <ul class="border border-gray-700">
+        {projects.value.map((p, index) => (
+          <li
+            key={p.id + index}
+            class="border border-b-gray-700 last:border-none"
           >
-            <svg
-              class="h-auto w-5 shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+            <Link
+              href={`/dashboard/${t.value.id}/${p.id}`}
+              class="flex px-5 py-4 capitalize text-gray-800 hover:bg-slate-50 "
             >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polygon points="10 8 16 12 10 16 10 8"></polygon>
-            </svg>
-            Run {t.value.name}
-          </button>
-        </div>
-
-        <div class="flex-1 rounded bg-[#111] px-3 py-5">
-          <ul>
-            {streamResponse.value.map((s, i) => (
-              <li
-                key={i + s.value}
-                class={cn(
-                  "block",
-                  s.type === "INFO" && "mt-2",
-                  !IsDone.value && "last:animate-pulse",
-                )}
-              >
-                <pre
-                  class={cn(
-                    "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
-                    s.type === "INFO" && "font-medium text-blue-400",
-                    s.type === "ERROR" && "text-red-500",
-                  )}
-                >
-                  {s.type === "START" && "🚀 "}
-                  {s.type === "END" && "✅ "}
-                  {s.type === "INFO" ? `[${s.value}]` : s.value}
-                </pre>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+              {p.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 });
