@@ -15,6 +15,8 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = {
-  title: "Dashboard - Deployer",
+export const head: DocumentHead = ({ head }) => {
+  return {
+    title: `${head.title || "Dashboard"} - Deployer`,
+  };
 };
