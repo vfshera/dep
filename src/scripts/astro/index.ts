@@ -6,7 +6,7 @@ import path from "path";
 
 export default function (): DeployScript<{ branch?: string }> {
   return {
-    id: "astro",
+    id: "astro-dep-v1",
     name: "Astro",
     description: "Deploy with Astro from git!",
     handler: server$(async function* (args) {
@@ -29,7 +29,7 @@ export default function (): DeployScript<{ branch?: string }> {
       /**
        *  git pull
        */
-      yield u.info(`Getting latest changes from ${branch} branch..`);
+      yield u.info(`Getting latest changes from the '${branch}' branch`);
 
       const git = sh.spawn("git", ["pull", "origin", branch], {
         cwd: WORKING_DIR,
@@ -51,7 +51,7 @@ export default function (): DeployScript<{ branch?: string }> {
       /**
        *  npm install
        */
-      yield u.info(`Installing Dependencies:`);
+      yield u.info(`Installing Dependencies`);
 
       const install = sh.spawn("npm", ["install"], {
         cwd: WORKING_DIR,
@@ -73,7 +73,7 @@ export default function (): DeployScript<{ branch?: string }> {
       /**
        *  npm run build
        */
-      yield u.info(`Building Astro Project:`);
+      yield u.info(`Building Project`);
 
       const build = sh.spawn("npm", ["run", "build"], {
         cwd: WORKING_DIR,
