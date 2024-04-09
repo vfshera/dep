@@ -1,13 +1,18 @@
 import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { toast } from "qwik-sonner";
-// import { useQwikTable } from "@tanstack/qwik-table";
 
 export { useProjects } from "../loaders";
 import { useTemplate, useProjects } from "../loaders";
 
-import { type ScriptYield } from "~/types";
-import { cn } from "~/utils";
-import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
+import type { ScriptYield } from "~/types";
+import { cn, prettyLogs } from "~/utils";
+import {
+  type DocumentHead,
+  routeLoader$,
+  server$,
+} from "@builder.io/qwik-city";
+
+import { scriptLogger } from "~/utils/logger";
 
 export const useProject = routeLoader$(
   async ({ params, resolveValue, status }) => {
@@ -17,15 +22,82 @@ export const useProject = routeLoader$(
     if (!project) {
       status(404);
     }
-
     return project;
   },
 );
+
+export const useLogs = routeLoader$(
+  async ({ resolveValue }): Promise<ReturnType<typeof prettyLogs>> => {
+    const p = await resolveValue(useProject);
+
+    if (!p) return [];
+
+    const logger = scriptLogger({
+      id: p.id,
+    });
+
+    return new Promise((resolve, reject) => {
+      logger.query(
+        {
+          order: "asc",
+          fields: ["level", "message", "timestamp"],
+          from: new Date(
+            new Date().getTime() - 24 * 60 * 60 * 1000 * 30 /** 1 month */,
+          ),
+        },
+        (err, logs) => {
+          if (err) {
+            return reject(err);
+          }
+
+          resolve(prettyLogs(logs.dailyRotateFile));
+        },
+      );
+    });
+  },
+);
+
+export const logDeployment = server$(function (
+  id: string,
+  logs: ScriptYield[],
+) {
+  const logger = scriptLogger({
+    id: id,
+  });
+
+  logs.forEach((i) => {
+    switch (i.type) {
+      case "INFO":
+        logger.info(i.value);
+        break;
+      case "DATA":
+        logger.data(i.value);
+        break;
+      case "ERROR":
+        logger.error(i.value);
+        break;
+      case "WARN":
+        logger.warn(i.value);
+        break;
+      case "START":
+        logger.log({ level: "start", message: i.value });
+        break;
+      case "END":
+        logger.log({ level: "end", message: i.value });
+        break;
+
+      default:
+        console.log("Unknown log type " + i.type);
+    }
+  });
+});
 
 export default component$(() => {
   const streamResponse = useSignal<ScriptYield[]>([]);
   const t = useTemplate();
   const project = useProject();
+
+  const logs = useLogs();
 
   const isDeploying = useSignal(false);
 
@@ -76,6 +148,7 @@ export default component$(() => {
       }
 
       streamResponse.value = [...streamResponse.value, i];
+      await logDeployment(project.value.id, [i]);
     }
 
     isDeploying.value = false;
@@ -135,30 +208,80 @@ export default component$(() => {
       </div>
       <hr />
       <div class="flex-1 rounded bg-[#111] px-3 py-5">
-        <ul>
-          {streamResponse.value.map((s, i) => (
-            <li
-              key={i + s.value}
-              class={cn(
-                "block",
-                s.type === "INFO" && "mt-2",
-                !IsDone.value && "last:animate-pulse",
-              )}
-            >
-              <pre
+        {isDeploying.value ? (
+          <ul>
+            {streamResponse.value.map((s, i) => (
+              <li
+                key={i + s.value}
                 class={cn(
-                  "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
-                  s.type === "INFO" && "font-medium text-blue-400",
-                  s.type === "ERROR" && "text-red-500",
+                  "block",
+                  s.type === "INFO" && "mt-2",
+                  !IsDone.value && "last:animate-pulse",
                 )}
               >
-                {s.type === "START" && "🚀 "}
-                {s.type === "END" && "✅ "}
-                {s.type === "INFO" ? `[${s.value}]` : s.value}
-              </pre>
-            </li>
-          ))}
-        </ul>
+                <pre
+                  class={cn(
+                    "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
+                    s.type === "INFO" && "font-medium text-blue-400",
+                    s.type === "ERROR" && "text-red-500",
+                  )}
+                >
+                  {s.type === "START" && "🚀 "}
+                  {s.type === "END" && "✅ "}
+                  {s.type === "INFO" ? `[${s.value}]` : s.value}
+                </pre>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div>
+            <p class="font-semibold text-white ">
+              {logs.value.length > 0 ? "Build logs:" : "No build logs"}
+            </p>
+
+            <div class="mt-2.5 space-y-2.5">
+              {logs.value.map((logGroup, index) => (
+                <div
+                  key={`${index}-${logGroup.timestamp.raw}`}
+                  class="space-y-2 pt-2.5 first:pt-0"
+                >
+                  <span class="inline-block bg-white/90 px-2">
+                    Run: {logGroup.timestamp.relative}
+                  </span>
+                  <ul>
+                    {logGroup.items.map((buildLog, i) => (
+                      <li
+                        key={i + buildLog.timestamp.raw}
+                        class={cn(
+                          "flex gap-3",
+                          buildLog.level === "info" && "mt-2",
+                        )}
+                      >
+                        <span class="text-sm text-white/90 ">
+                          {buildLog.timestamp.raw}
+                        </span>
+                        <pre
+                          class={cn(
+                            "block cursor-pointer rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
+                            buildLog.level === "info" &&
+                              "font-medium text-blue-400",
+                            buildLog.level === "error" && "text-red-500",
+                          )}
+                        >
+                          {buildLog.level === "start" && "🚀 "}
+                          {buildLog.level === "end" && "✅ "}
+                          {buildLog.level === "info"
+                            ? `[${buildLog.message}]`
+                            : buildLog.message}
+                        </pre>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
