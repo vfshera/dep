@@ -20,9 +20,13 @@
     "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+    "drizzle:generate": "drizzle-kit generate:sqlite",
+    "drizzle:migrate": "drizzle-kit push:sqlite",
+    "drizzle:studio": "drizzle-kit studio --host 127.0.0.1",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
+    "postinstall": "drizzle-kit generate:sqlite",
     "preview": "qwik build preview && vite preview --open",
     "serve": "node server/entry.express",
     "start": "vite --open --mode ssr",
@@ -34,6 +38,7 @@
     "@builder.io/qwik-auth": "0.1.1",
     "@builder.io/qwik-city": "^1.5.1",
     "@builder.io/qwik-react": "0.5.0",
+    "@types/better-sqlite3": "^7.6.9",
     "@types/compression": "^1.7.2",
     "@types/eslint": "^8.56.5",
     "@types/express": "^4.17.19",
@@ -45,6 +50,7 @@
     "autoprefixer": "^10.4.14",
     "compression": "^1.7.4",
     "dotenv": "^16.3.2",
+    "drizzle-kit": "^0.20.14",
     "eslint": "^8.57.0",
     "eslint-plugin-qwik": "^1.5.1",
     "express": "4.18.2",
@@ -62,9 +68,13 @@
   "dependencies": {
     "@fontsource/geist-sans": "^5.0.2",
     "@tanstack/qwik-table": "^8.15.3",
+    "better-sqlite3": "^9.4.3",
+    "drizzle-orm": "^0.29.4",
     "framer-motion": "^11.0.25",
     "mini-svg-data-uri": "^1.4.4",
     "qwik-sonner": "^0.3.3",
-    "tailwind-merge": "^2.2.2"
+    "tailwind-merge": "^2.2.2",
+    "winston": "^3.13.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }
