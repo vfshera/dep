@@ -14,3 +14,9 @@ export type ScriptYield = {
   type: "INFO" | "DATA" | "ERROR" | "WARN" | "END" | "START";
   value: string;
 };
+
+export type LogOutput = {
+  level: Lowercase<ScriptYield["type"]>;
+  message: string;
+  timestamp: string;
+};
