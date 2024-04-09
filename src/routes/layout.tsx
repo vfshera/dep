@@ -33,6 +33,8 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = {
-  title: "Deployer",
+export const head: DocumentHead = ({ head }) => {
+  return {
+    title: head.title ? `${head.title} - Deployer` : "Deployer",
+  };
 };

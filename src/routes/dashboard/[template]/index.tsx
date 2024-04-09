@@ -1,5 +1,5 @@
 import { component$ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { DocumentHead, Link } from "@builder.io/qwik-city";
 import { useTemplate } from "./loaders";
 // import { useQwikTable } from "@tanstack/qwik-table";
 
@@ -39,3 +39,10 @@ export default component$(() => {
     </div>
   );
 });
+
+export const head: DocumentHead = ({ resolveValue }) => {
+  const t = resolveValue(useTemplate);
+  return {
+    title: t?.name ? `${t.name} Template` : "Template",
+  };
+};

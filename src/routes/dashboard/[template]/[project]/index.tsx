@@ -167,6 +167,11 @@ export default component$(() => {
 export const head: DocumentHead = ({ resolveValue }) => {
   const p = resolveValue(useProject);
   return {
-    title: p?.name,
+    title: p
+      ? `${p.name
+          .split(" ")
+          .map((w) => w[0].toUpperCase() + w.slice(1))
+          .join(" ")} Project`
+      : "Project",
   };
 };

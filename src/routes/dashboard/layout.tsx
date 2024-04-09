@@ -17,6 +17,6 @@ export default component$(() => {
 
 export const head: DocumentHead = ({ head }) => {
   return {
-    title: `${head.title || "Dashboard"} - Deployer`,
+    title: head.title ? `${head.title} | Dashboard` : "Dashboard",
   };
 };

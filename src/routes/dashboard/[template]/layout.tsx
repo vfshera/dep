@@ -1,5 +1,5 @@
 import { Slot, component$ } from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { Link } from "@builder.io/qwik-city";
 
 export { useTemplate } from "./loaders";
 import { useTemplate } from "./loaders";
@@ -32,10 +32,3 @@ export default component$(() => {
     </div>
   );
 });
-
-export const head: DocumentHead = ({ resolveValue }) => {
-  const t = resolveValue(useTemplate);
-  return {
-    title: t?.name,
-  };
-};
