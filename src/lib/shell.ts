@@ -95,6 +95,21 @@ export async function mv(from: string, to: string) {
     return exec(`mv ${from} ${to}`);
 }
 
+ export async function exists(needle:string,haystack:string){
+    const res = await ls(haystack);
+
+    if (res.stderr !== "") {
+      
+        return {ok:false,error:res.stderr}
+    }
+
+    if (!res.stdout.split("\n").includes(needle)) {
+     return {ok:false}
+    }
+
+
+    return {ok:true}
+ }
  
 export default sh
 
