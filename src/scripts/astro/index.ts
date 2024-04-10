@@ -3,6 +3,7 @@ import * as u from "../utils";
 import sh from "~/lib/shell";
 import { type RequestEvent, server$ } from "@builder.io/qwik-city";
 import path from "path";
+import { WORKING_DIR_KEY } from "~/constants";
 
 export default function (): DeployScript<{
   branch?: string;
@@ -16,11 +17,11 @@ export default function (): DeployScript<{
       const { env } = this as RequestEvent;
       const branch = args.branch ?? "main";
 
-      const BASE_DIR = env.get("CMD_WORKING_DIR");
+      const BASE_DIR = env.get(WORKING_DIR_KEY);
 
       if (!BASE_DIR) {
         throw Error(
-          "Base directory not found! Please set `CMD_WORKING_DIR` in the .env file!",
+          `Base directory not found! Please set ${WORKING_DIR_KEY} in the .env file!`,
         );
       }
 
