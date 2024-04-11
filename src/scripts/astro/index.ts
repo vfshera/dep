@@ -15,6 +15,7 @@ export default function (): DeployScript<{
     handler: server$(async function* (args) {
       // @ts-ignore
       const { env } = this as RequestEvent;
+
       const branch = args.branch ?? "main";
 
       const BASE_DIR = env.get(WORKING_DIR_KEY);

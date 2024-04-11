@@ -15,6 +15,7 @@ export const useTemplate = routeLoader$(({ params, status }) => {
 
 export const useProjects = routeLoader$(async ({ env }) => {
   const wd = env.get("CMD_WORKING_DIR") || "";
+
   const lsres = await ls(wd);
 
   return lsres.stdout

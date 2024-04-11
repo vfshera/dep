@@ -69,6 +69,7 @@ export function relativeTime(date: Date | number, from?: Date): string {
  */
 export function splitLogByLevels(array: LogOutput[]) {
   const segments: LogOutput[][] = [];
+
   let segment: LogOutput[] = [];
 
   for (const obj of array) {
@@ -82,6 +83,7 @@ export function splitLogByLevels(array: LogOutput[]) {
       segment.push(obj);
     }
   }
+
   return segments;
 }
 
@@ -97,6 +99,7 @@ export function prettyLogs(logs: LogOutput[]) {
   return splitLogs
     .map((log) => {
       const time = log[log.length - 1].timestamp;
+
       return {
         timestamp: {
           raw: time,

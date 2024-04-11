@@ -2,6 +2,7 @@ import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { toast } from "qwik-sonner";
 
 export { useProjects } from "../loaders";
+
 import { useTemplate, useProjects } from "../loaders";
 
 import type { ScriptYield } from "~/types";
@@ -17,11 +18,13 @@ import { scriptLogger } from "~/utils/logger";
 export const useProject = routeLoader$(
   async ({ params, resolveValue, status }) => {
     const projects = await resolveValue(useProjects);
+
     const project = projects.find((p) => p.id === params.project);
 
     if (!project) {
       status(404);
     }
+
     return project;
   },
 );
@@ -94,7 +97,9 @@ export const logDeployment = server$(function (
 
 export default component$(() => {
   const streamResponse = useSignal<ScriptYield[]>([]);
+
   const t = useTemplate();
+
   const project = useProject();
 
   const logs = useLogs();
@@ -289,6 +294,7 @@ export default component$(() => {
 
 export const head: DocumentHead = ({ resolveValue }) => {
   const p = resolveValue(useProject);
+
   return {
     title: p
       ? `${p.name

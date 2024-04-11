@@ -4,6 +4,7 @@ import { useAuthSession } from "../plugin@auth";
 
 export default component$(() => {
   const session = useAuthSession();
+
   return (
     <header class="flex h-12 items-center justify-between border-b px-5">
       <Link href="/dashboard" class="text-xl font-bold tracking-tight">

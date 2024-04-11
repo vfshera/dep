@@ -2,6 +2,7 @@ import { Slot, component$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 
 export { useTemplate } from "./loaders";
+
 import { useTemplate } from "./loaders";
 
 export default component$(() => {

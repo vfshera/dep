@@ -10,6 +10,7 @@ export type DeployScript<T = {}> = {
     ) => AsyncGenerator<ScriptYield, void, unknown>
   >;
 };
+
 export type ScriptYield = {
   type: "INFO" | "DATA" | "ERROR" | "WARN" | "END" | "START";
   value: string;

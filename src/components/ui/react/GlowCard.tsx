@@ -63,6 +63,7 @@ const GlowingStarsTitle = ({
 
 const Illustration = ({ mouseEnter }: { mouseEnter: boolean }) => {
   const stars = 108;
+
   const columns = 18;
 
   const [glowingStars, setGlowingStars] = useState<number[]>([]);
@@ -91,8 +92,11 @@ const Illustration = ({ mouseEnter }: { mouseEnter: boolean }) => {
     >
       {[...Array(stars)].map((_, starIdx) => {
         const isGlowing = glowingStars.includes(starIdx);
+
         const delay = (starIdx % 10) * 0.1;
+
         const staticDelay = starIdx * 0.01;
+
         return (
           <div
             key={`matrix-col-${starIdx}}`}
