@@ -13,7 +13,7 @@ node_modules
 .mf
 .rollup.cache
 tsconfig.tsbuildinfo
-
+*.sqlite
 # Logs
 logs
 *.log
@@ -27,6 +27,7 @@ lerna-debug.log*
 .vscode/*
 !.vscode/launch.json
 !.vscode/*.code-snippets
+!.vscode/settings.json
 
 .idea
 .DS_Store
