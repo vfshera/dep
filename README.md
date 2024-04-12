@@ -1,3 +1,3 @@
 # Dep
 
-A personal deployment tool created to easily update cpane sites. 
+A personal deployment tool created to easily update cpanel sites. 
