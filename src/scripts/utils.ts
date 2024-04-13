@@ -12,12 +12,16 @@ export function error(msg: string): ScriptYield {
   return { type: "ERROR", value: msg };
 }
 
+export function success(msg: string): ScriptYield {
+  return { type: "SUCCESS", value: msg };
+}
+
 export function warn(msg: string): ScriptYield {
   return { type: "WARN", value: msg };
 }
 
-export function end(msg: string): ScriptYield {
-  return { type: "END", value: msg };
+export function end(): ScriptYield {
+  return { type: "END", value: "" };
 }
 
 export function start(msg: string): ScriptYield {
