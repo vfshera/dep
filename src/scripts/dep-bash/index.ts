@@ -49,10 +49,13 @@ export default function (): DeployScript<{}> {
         deploy.on("exit", (code) => {
           console.log(`[Deploy Script]: Exited with code ${code}`);
         });
+
         yield u.success("Deployment successfull!");
+
         yield u.end();
       } else {
         yield u.error("Could not make `./dep.sh` executable!");
+
         yield u.end();
       }
     }),

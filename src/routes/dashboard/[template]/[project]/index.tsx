@@ -49,7 +49,7 @@ export const useLogs = routeLoader$(
           ),
         },
         (err, logs) => {
-          if (err) {
+          if (!logs) {
             return reject(err);
           }
 
@@ -131,29 +131,33 @@ export default component$(() => {
 
     streamResponse.value = [];
 
-    const res = await t.value.handler({
-      WORKING_DIR: project.value.id,
-    });
+    try {
+      const res = await t.value.handler({
+        WORKING_DIR: project.value.id,
+      });
 
-    for await (const i of res) {
-      if (i.type === "START") {
-        toast("🚀 " + i.value);
+      for await (const i of res) {
+        if (i.type === "START") {
+          toast("🚀 " + i.value);
+        }
+
+        if (i.type === "SUCCESS") {
+          toast.success(i.value);
+        }
+
+        if (i.type === "INFO") {
+          toast.info(i.value);
+        }
+
+        if (i.type === "ERROR") {
+          toast.error(i.value);
+        }
+
+        streamResponse.value = [...streamResponse.value, i];
+        await logDeployment(project.value.id, [i]);
       }
-
-      if (i.type === "END") {
-        toast.success(i.value);
-      }
-
-      if (i.type === "INFO") {
-        toast.info(i.value);
-      }
-
-      if (i.type === "ERROR") {
-        toast.error(i.value);
-      }
-
-      streamResponse.value = [...streamResponse.value, i];
-      await logDeployment(project.value.id, [i]);
+    } catch (err) {
+      // console.log({ err });
     }
 
     isDeploying.value = false;
@@ -215,28 +219,31 @@ export default component$(() => {
       <div class="flex-1 rounded bg-[#111] px-3 py-5">
         {isDeploying.value ? (
           <ul>
-            {streamResponse.value.map((s, i) => (
-              <li
-                key={i + s.value}
-                class={cn(
-                  "block",
-                  s.type === "INFO" && "mt-2",
-                  !IsDone.value && "last:animate-pulse",
-                )}
-              >
-                <pre
+            {streamResponse.value
+              .filter((s) => s.type !== "END")
+              .map((s, i) => (
+                <li
+                  key={i + s.value}
                   class={cn(
-                    "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
-                    s.type === "INFO" && "font-medium text-blue-400",
-                    s.type === "ERROR" && "text-red-500",
+                    "block",
+                    s.type === "INFO" && "mt-2",
+                    !IsDone.value && "last:animate-pulse",
                   )}
                 >
-                  {s.type === "START" && "🚀 "}
-                  {s.type === "END" && "✅ "}
-                  {s.type === "INFO" ? `[${s.value}]` : s.value}
-                </pre>
-              </li>
-            ))}
+                  <pre
+                    class={cn(
+                      "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
+                      s.type === "INFO" && "font-medium text-blue-400",
+                      s.type === "ERROR" && "text-red-500",
+                      s.type === "SUCCESS" && "text-green-500",
+                    )}
+                  >
+                    {s.type === "START" && "🚀 "}
+                    {s.type === "SUCCESS" && "✅ "}
+                    {s.type === "INFO" ? `[${s.value}]` : s.value}
+                  </pre>
+                </li>
+              ))}
           </ul>
         ) : (
           <div>
@@ -254,33 +261,36 @@ export default component$(() => {
                     Run: {logGroup.timestamp.relative}
                   </span>
                   <ul>
-                    {logGroup.items.map((buildLog, i) => (
-                      <li
-                        key={i + buildLog.timestamp.raw}
-                        class={cn(
-                          "flex gap-3",
-                          buildLog.level === "info" && "mt-2",
-                        )}
-                      >
-                        <span class="text-sm text-white/90 ">
-                          {buildLog.timestamp.raw}
-                        </span>
-                        <pre
+                    {logGroup.items
+                      .filter((l) => l.level !== "end")
+                      .map((buildLog, i) => (
+                        <li
+                          key={i + buildLog.timestamp.raw}
                           class={cn(
-                            "block cursor-pointer rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
-                            buildLog.level === "info" &&
-                              "font-medium text-blue-400",
-                            buildLog.level === "error" && "text-red-500",
+                            "flex gap-3",
+                            buildLog.level === "info" && "mt-2",
                           )}
                         >
-                          {buildLog.level === "start" && "🚀 "}
-                          {buildLog.level === "end" && "✅ "}
-                          {buildLog.level === "info"
-                            ? `[${buildLog.message}]`
-                            : buildLog.message}
-                        </pre>
-                      </li>
-                    ))}
+                          <span class="text-sm text-white/90 ">
+                            {buildLog.timestamp.raw}
+                          </span>
+                          <pre
+                            class={cn(
+                              "block cursor-pointer rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
+                              buildLog.level === "info" &&
+                                "font-medium text-blue-400",
+                              buildLog.level === "error" && "text-red-500",
+                              buildLog.level === "success" && "text-green-500",
+                            )}
+                          >
+                            {buildLog.level === "start" && "🚀 "}
+                            {buildLog.level === "success" && "✅ "}
+                            {buildLog.level === "info"
+                              ? `[${buildLog.message}]`
+                              : buildLog.message}
+                          </pre>
+                        </li>
+                      ))}
                   </ul>
                 </div>
               ))}
