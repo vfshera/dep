@@ -1,6 +1,7 @@
 import astro from "./astro";
+import depBash from "./dep-bash";
 
-const scripts = [astro()];
+const scripts = [depBash(), astro()];
 
 const uniqueScriptIdsids = [...new Set(scripts.map((s) => s.id))];
 

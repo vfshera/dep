@@ -95,7 +95,7 @@ export async function mv(from: string, to: string) {
     return exec(`mv ${from} ${to}`);
 }
 
- export async function exists(needle:string,haystack:string){
+export async function exists(needle:string,haystack:string){
     const res = await ls(haystack);
 
     if (res.stderr !== "") {
@@ -110,6 +110,18 @@ export async function mv(from: string, to: string) {
 
     return {ok:true}
  }
+
+
+
+export async function makeExecutable(file:string){
+    try {
+        await exec(`chmod +x ${file}`);
+        return{ok: true};
+    } catch (error) {
+        console.error("Error making script executable:", error);
+        return {ok:false};
+    }
+}
  
 export default sh
 
