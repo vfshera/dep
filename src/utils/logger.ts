@@ -50,7 +50,7 @@ export function createDailyRotateFileTransport(
 export function scriptLogger(options: { id: string }) {
   return createWinstonLogger({
     level: "end",
-    levels: { ...levels, data: 3, start: 4, end: 5 },
+    levels: { ...levels, data: 3, success: 4, start: 5, end: 6 },
     transports: [
       createDailyRotateFileTransport({
         dirname: `logs/${options.id}`,
