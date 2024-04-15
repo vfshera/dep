@@ -6,6 +6,13 @@ export const users = sqliteTable("users", {
   email: text("email").notNull(),
 });
 
+export const projects = sqliteTable("projects", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  templateId: text("templateId").notNull(),
+});
+
 export default {
   users,
+  projects,
 };
