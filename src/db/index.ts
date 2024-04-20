@@ -1,19 +1,9 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/postgres-js";
 import schema from "./schema";
+import postgres from "postgres";
 
-const connection = new Database("./drizzle/db.sqlite");
+const connection = postgres();
 
 const db = drizzle(connection, { schema });
-
-// (async () => {
-//   if (process.env.DEV) {
-//     console.log();
-//     console.log("DRIZZLE: ⚡ Running migrations");
-//     await migrate(db, { migrationsFolder: "./drizzle" });
-//     console.log("DRIZZLE: Done ✅");
-//     console.log();
-//   }
-// })();
 
 export default db;

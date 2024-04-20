@@ -6,6 +6,7 @@ import { type Session } from "@auth/core/types";
 
 export const onRequest: RequestHandler = (event) => {
   const session: Session | null = event.sharedMap.get("session");
+ 
 
   const ALLOWED_USERS = event.env.get("ALLOWED_USERS")?.split(",");
 

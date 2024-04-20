@@ -92,7 +92,7 @@ export default function (): DeployScript<{
         console.log(`[npm build]:  Child exited with code ${code}`);
       });
 
-      yield u.end("Done!");
+      yield u.end( );
     }),
   };
 }
