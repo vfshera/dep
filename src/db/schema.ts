@@ -1,18 +1,25 @@
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
+// import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
-export const users = sqliteTable("users", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: text("name").default("not_provided"),
-  email: text("email").notNull(),
+export const projects = pgTable("projects", {
+  id: uuid("id").primaryKey(),
+  name: text("name").notNull(),
+  active: boolean("active").default(false).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", precision: 3 })
+    .defaultNow()
+    .notNull(),
 });
 
-export const projects = sqliteTable("projects", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+export const keys = pgTable("keys", {
+  id: uuid("id").primaryKey(),
   name: text("name").notNull(),
-  templateId: text("templateId").notNull(),
+  projectId: uuid("project_id").notNull(),
+  token: text("token").notNull(),
+  createdAt: timestamp("created_at", { mode: "date", precision: 3 })
+    .defaultNow()
+    .notNull(),
 });
 
 export default {
-  users,
   projects,
 };
