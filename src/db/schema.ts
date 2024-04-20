@@ -4,6 +4,7 @@ import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
 export const project = pgTable("projects", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  slug: text("slug").notNull(),
   workingDir: text("working_dir").notNull(),
   active: boolean("active").default(false),
   createdAt: timestamp("created_at", {

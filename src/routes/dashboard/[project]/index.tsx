@@ -10,10 +10,12 @@ import {
 } from "@builder.io/qwik-city";
 
 import { scriptLogger } from "~/lib/logger";
+import * as u from "~/lib/logger/utils";
 import { getProjectById } from "~/db/queries";
 import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
 import { isRunnableJob, loadWorkflow, validateWorkflow } from "~/lib/workflow";
 import path from "node:path";
+import sh from "~/lib/shell";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectById(params.project);
@@ -91,9 +93,9 @@ export const logDeployment = server$(function (
   });
 });
 
-export const runActions = server$(async function* (dir: string) {
-  console.log("Running actions", dir);
-
+export const runActions = server$(async function* (
+  dir: string,
+): AsyncGenerator<ScriptYield, void, unknown> {
   const BASE_DIR = this.env.get(WORKING_DIR_KEY);
 
   if (!BASE_DIR) {
@@ -107,31 +109,65 @@ export const runActions = server$(async function* (dir: string) {
   if (!validation.ok) {
     yield {
       type: "ERROR",
-      value: validation.message,
+      value: validation.message!,
     };
 
     throw Error(validation.message);
   }
 
-  const actions = await loadWorkflow(path.join(BASE_DIR, dir, DEPLOY_DIR_NAME));
+  const PROJECT_WD = path.join(BASE_DIR, dir, DEPLOY_DIR_NAME);
 
-  console.log(actions.name);
+  const actions = await loadWorkflow(PROJECT_WD);
 
-  Object.keys(actions.jobs).forEach((key) => {
+  yield u.start(actions.name);
+
+  for (const key in actions.jobs) {
     const job = actions.jobs[key as keyof (typeof actions)["jobs"]];
 
+    yield u.info(job.name);
+
     if (isRunnableJob(job)) {
-      console.log(`${job.name}: > '${job.run.split(" ")}'`);
-    } else {
-      console.log(`${job.name} |`);
+      const [com, ...cmds] = job.run.split(" ");
 
-      job.steps.forEach((step) => {
-        console.log(`  ${step.name}: > '${step.run.split(" ")}'`);
+      const jobProcess = sh.spawn(com, cmds, { cwd: PROJECT_WD, shell: true });
+
+      for await (const data of jobProcess.stdout) {
+        yield u.data((data.toString() as string).trim());
+      }
+
+      for await (const data of jobProcess.stderr) {
+        yield u.error((data.toString() as string).trim());
+      }
+
+      jobProcess.on("exit", (code) => {
+        console.log(`[${job.name}]: Child exited with code ${code}`);
       });
-    }
-  });
+    } else {
+      for (const step of job.steps) {
+        yield u.info(step.name);
+        const [com, ...cmds] = step.run.split(" ");
 
-  yield "Hello";
+        const stepProcess = sh.spawn(com, cmds, {
+          cwd: PROJECT_WD,
+          shell: true,
+        });
+
+        for await (const data of stepProcess.stdout) {
+          yield u.data((data.toString() as string).trim());
+        }
+
+        for await (const data of stepProcess.stderr) {
+          yield u.error((data.toString() as string).trim());
+        }
+
+        stepProcess.on("exit", (code) => {
+          console.log(`[${job.name}]: Child exited with code ${code}`);
+        });
+      }
+    }
+  }
+
+  yield u.end();
 });
 
 export default component$(() => {
@@ -160,33 +196,36 @@ export default component$(() => {
   });
 
   const deploy = $(async () => {
-    // isDeploying.value = true;
-    // streamResponse.value = [];
-    // try {
-    await runActions(project.value.workingDir);
-    //   const res = await t.value.handler({
-    //     WORKING_DIR: project.value?.workingDir,
-    //   });
-    //   for await (const i of res) {
-    //     if (i.type === "START") {
-    //       toast("🚀 " + i.value);
-    //     }
-    //     if (i.type === "SUCCESS") {
-    //       toast.success(i.value);
-    //     }
-    //     if (i.type === "INFO") {
-    //       toast.info(i.value);
-    //     }
-    //     if (i.type === "ERROR") {
-    //       toast.error(i.value);
-    //     }
-    //     streamResponse.value = [...streamResponse.value, i];
-    //     await logDeployment(project.value.id, [i]);
-    //   }
-    // } catch (err) {
-    //   // console.log({ err });
-    // }
-    // isDeploying.value = false;
+    isDeploying.value = true;
+    streamResponse.value = [];
+    try {
+      const res = await runActions(project.value.workingDir);
+
+      for await (const i of res) {
+        if (i.type === "START") {
+          toast("🚀 " + i.value);
+        }
+
+        if (i.type === "SUCCESS") {
+          toast.success(i.value);
+        }
+
+        if (i.type === "INFO") {
+          toast.info(i.value);
+        }
+
+        if (i.type === "ERROR") {
+          toast.error(i.value);
+        }
+
+        streamResponse.value = [...streamResponse.value, i];
+        await logDeployment(project.value.id, [i]);
+      }
+    } catch (err) {
+      console.log({ err });
+    }
+
+    isDeploying.value = false;
   });
 
   return (
@@ -194,8 +233,8 @@ export default component$(() => {
       <div class="flex justify-between">
         <div>
           <h2 class="text-2xl capitalize">{project.value.name}</h2>
-          <span class="inline-block rounded-full border border-current px-2 py-1 text-sm text-gray-600">
-            {project.value.id}
+          <span class="inline-block rounded-full border border-current px-2 py-0.5 text-xs text-gray-600">
+            {project.value.slug}
           </span>
         </div>
         <div>

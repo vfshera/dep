@@ -3,7 +3,10 @@ import type { InsertProject } from "./schema";
 import { project } from "./schema";
 
 export async function createProject(data: InsertProject) {
-  return db.insert(project).values(data).returning({ id: project.id });
+  return db
+    .insert(project)
+    .values(data)
+    .returning({ id: project.id, slug: project.slug });
 }
 
 export async function getProjectById(id: string) {

@@ -1,4 +1,5 @@
 import { component$, useSignal } from "@builder.io/qwik";
+import slugify from "slugify";
 import {
   routeAction$,
   zod$,
@@ -10,14 +11,10 @@ import {
 
 import Input from "~/components/ui/form/Input";
 import Errors from "~/components/ui/form/Errors";
-import { exists } from "~/lib/shell";
-import {
-  DEPLOY_DIR_NAME,
-  DEPLOY_FILE_NAME,
-  WORKING_DIR_KEY,
-} from "~/constants";
-import path from "path";
+import { WORKING_DIR_KEY } from "~/constants";
 import { createProject, getProjects } from "~/db/queries";
+import { validateWorkflow } from "~/lib/workflow";
+import { toast } from "qwik-sonner";
 
 export const useProjects = routeLoader$(async () => {
   const projects = await getProjects();
@@ -36,43 +33,21 @@ export const useCreateProject = routeAction$(
       };
     }
 
-    let res = await exists(data.dir, BASE_DIR);
+    const validation = await validateWorkflow(data.dir, BASE_DIR);
 
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `Template '${data.dir}' does not exist!`,
-      };
+    if (!validation.ok) {
+      return { success: validation.ok, message: validation.message };
     }
 
-    res = await exists(DEPLOY_DIR_NAME, path.join(BASE_DIR, data.dir));
-
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `'${DEPLOY_DIR_NAME}' directory is not found in '${data.dir}'!`,
-      };
-    }
-
-    res = await exists(
-      DEPLOY_FILE_NAME,
-      path.join(BASE_DIR, data.dir, DEPLOY_DIR_NAME),
-    );
-
-    if (!res.ok) {
-      return {
-        success: false,
-        message: `'${DEPLOY_FILE_NAME.join(" or ")}' script is not found in '${data.dir}'!`,
-      };
-    }
-
-    const p = await createProject({
+    const [p] = await createProject({
       name: data.name,
+      slug: slugify(data.name, { lower: true, trim: true }),
       workingDir: data.dir,
       active: true,
     });
 
-    console.log({ p });
+    toast.success(p.slug);
+    toast.success("Project created successfully");
 
     return { success: true, message: "Project created successfully" };
   },
@@ -137,7 +112,11 @@ export default component$(() => {
 
       <dialog ref={addDialogRef} class="backdrop:bg-black/70">
         <div class="bg-white p-5">
-          <Form action={createAction} class="space-y-3">
+          <Form
+            action={createAction}
+            class="space-y-3"
+            onSubmitCompleted$={() => addDialogRef.value?.close()}
+          >
             <Input type="text" placeholder="Name" name="name" />
 
             {createAction.value?.failed && (
@@ -156,17 +135,8 @@ export default component$(() => {
               />
             </div>
 
-            {createAction.value?.success !== undefined &&
-              !createAction.value.success && (
-                <Errors errors={[createAction.value.message]} />
-              )}
-
             {createAction.value?.failed && (
               <Errors errors={createAction.value.fieldErrors.dir} />
-            )}
-
-            {createAction.value?.success && (
-              <div class="text-green-500">Success!</div>
             )}
 
             <button

@@ -99,8 +99,7 @@ export async function exists(needle:string|string[],haystack:string){
     const res = await exec(`ls -a ${haystack}`);
 
  const dirs =res.stdout.split("\n") .filter(Boolean)
-
- console.log({dirs,needle,haystack});
+ 
  
     
     if (res.stderr !== "") {

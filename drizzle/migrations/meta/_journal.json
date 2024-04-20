@@ -29,6 +29,20 @@
       "when": 1713577592240,
       "tag": "0003_breezy_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1713589485515,
+      "tag": "0004_large_agent_zero",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1713590121573,
+      "tag": "0005_fixed_mimic",
+      "breakpoints": true
     }
   ]
 }
