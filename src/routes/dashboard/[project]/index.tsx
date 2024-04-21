@@ -297,7 +297,7 @@ export default component$(() => {
                 >
                   <pre
                     class={cn(
-                      "block cursor-pointer rounded px-2 py-0.5 text-sm  text-white hover:bg-white/5 hover:transition-colors",
+                      "block cursor-pointer  whitespace-break-spaces break-words rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
                       s.type === "INFO" && "font-medium text-blue-400",
                       s.type === "ERROR" && "text-red-500",
                       s.type === "SUCCESS" && "text-green-500",
@@ -336,12 +336,12 @@ export default component$(() => {
                             buildLog.level === "info" && "mt-2",
                           )}
                         >
-                          <span class="text-sm text-white/90 ">
+                          <span class="shrink-0 text-sm text-white/90">
                             {buildLog.timestamp.raw}
                           </span>
                           <pre
                             class={cn(
-                              "block cursor-pointer rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
+                              "block cursor-pointer whitespace-break-spaces  break-words rounded  px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
                               buildLog.level === "info" &&
                                 "font-medium text-blue-400",
                               buildLog.level === "error" && "text-red-500",
