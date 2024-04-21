@@ -2,7 +2,8 @@ import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { toast } from "qwik-sonner";
 
 import type { ScriptYield } from "~/types";
-import { cn, prettyLogs } from "~/utils";
+import type { prettyLogs } from "~/utils";
+import { cn } from "~/utils";
 import {
   type DocumentHead,
   routeLoader$,
@@ -33,28 +34,7 @@ export const useLogs = routeLoader$(
 
     if (!p) return [];
 
-    const logger = scriptLogger({
-      id: p.id,
-    });
-
-    return new Promise((resolve, reject) => {
-      logger.query(
-        {
-          order: "asc",
-          fields: ["level", "message", "timestamp"],
-          from: new Date(
-            new Date().getTime() - 24 * 60 * 60 * 1000 * 30 /** 1 month */,
-          ),
-        },
-        (err, logs) => {
-          if (!logs) {
-            return reject(err);
-          }
-
-          resolve(prettyLogs(logs.dailyRotateFile));
-        },
-      );
-    });
+    return u.getLogs(p.id);
   },
 );
 
@@ -237,7 +217,8 @@ export default component$(() => {
             {project.value.slug}
           </span>
         </div>
-        <div>
+        <div class="flex items-center gap-5">
+          <button>API</button>
           <button
             class="flex items-center gap-1 rounded-xl bg-black p-2.5 pl-4 pr-5 text-white disabled:cursor-not-allowed disabled:text-white/70"
             disabled={isDeploying.value}
