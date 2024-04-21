@@ -120,7 +120,7 @@ export const runActions = server$(async function* (
       }
 
       jobProcess.on("exit", (code) => {
-        console.log(`[${job.name}]: Child exited with code ${code}`);
+        console.log(`[${key}]: ${job.name} exited with code ${code}`);
       });
     } else {
       for (const step of job.steps) {
@@ -141,7 +141,7 @@ export const runActions = server$(async function* (
         }
 
         stepProcess.on("exit", (code) => {
-          console.log(`[${job.name}]: Child exited with code ${code}`);
+          console.log(`[${step}]: ${job.name} exited with code ${code}`);
         });
       }
     }
@@ -206,6 +206,7 @@ export default component$(() => {
     }
 
     isDeploying.value = false;
+    window.location.reload();
   });
 
   return (
