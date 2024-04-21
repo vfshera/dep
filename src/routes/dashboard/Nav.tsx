@@ -1,9 +1,11 @@
 import { component$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
-import { useAuthSession } from "../plugin@auth";
+import { useAuthSession, useAuthSignout } from "../plugin@auth";
 
 export default component$(() => {
   const session = useAuthSession();
+
+  const signout = useAuthSignout();
 
   return (
     <header class="sticky top-0 z-50 flex h-12 items-center justify-between border-b bg-white px-5">
@@ -11,8 +13,14 @@ export default component$(() => {
         Dashboard
       </Link>
 
-      <div>
+      <div class="flex items-center gap-3">
         <p>{session.value?.user?.name}</p>
+        <button
+          class="text-red-600"
+          onClick$={() => signout.submit({ callbackUrl: "/" })}
+        >
+          Sign out
+        </button>
       </div>
     </header>
   );
