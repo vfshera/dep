@@ -110,11 +110,11 @@ export default component$(() => {
         ))}
       </ul>
 
-      <dialog ref={addDialogRef} class="backdrop:bg-black/70">
-        <div class="bg-white p-5">
+      <dialog ref={addDialogRef} class="bg-transparent backdrop:bg-black/70">
+        <div class="mt-[20vh] rounded bg-white p-8">
           <Form
             action={createAction}
-            class="space-y-3"
+            class="space-y-5"
             onSubmitCompleted$={() => addDialogRef.value?.close()}
           >
             <Input type="text" placeholder="Name" name="name" />
@@ -123,9 +123,9 @@ export default component$(() => {
               <Errors errors={createAction.value.fieldErrors.name} />
             )}
 
-            <div class="flex items-center gap-1 rounded bg-slate-200 px-2 py-1">
+            <div class="flex items-center rounded  border border-black px-2 py-1">
               <span class="text-gray-800">BASE_DIR </span>
-              <span class="text-2xl font-semibold text-gray-800">/</span>
+              <span class="text-lg font-medium text-gray-800">/</span>
 
               <Input
                 type="text"
@@ -139,12 +139,21 @@ export default component$(() => {
               <Errors errors={createAction.value.fieldErrors.dir} />
             )}
 
-            <button
-              type="submit"
-              class="flex items-center gap-1 rounded-xl bg-black p-2.5 pl-4 pr-5 text-white disabled:cursor-not-allowed disabled:text-white/70"
-            >
-              Create Project
-            </button>
+            <div class="grid grid-cols-2 gap-5 ">
+              <button
+                type="submit"
+                class="rounded-xl bg-black py-2 pl-4 pr-5 text-center text-white hover:shadow-lg"
+              >
+                Create Project
+              </button>
+              <button
+                type="button"
+                onClick$={() => addDialogRef.value?.close()}
+                class="rounded-xl border border-black bg-white py-2 pl-4 pr-5 text-black shadow hover:shadow-lg"
+              >
+                Close
+              </button>
+            </div>
           </Form>
         </div>
       </dialog>
