@@ -139,7 +139,21 @@ export default component$(() => {
           <Form
             action={createAction}
             class="space-y-5"
-            onSubmitCompleted$={() => addDialogRef.value?.close()}
+            onSubmitCompleted$={() => {
+              if (createAction.value?.success) {
+                toast.success(
+                  createAction.value.message || "Project created successfully",
+                );
+
+                addDialogRef.value?.close();
+
+                return;
+              } else {
+                toast.error(
+                  createAction.value?.message || "Failed to create project",
+                );
+              }
+            }}
           >
             <Input type="text" placeholder="Name" name="name" />
 
@@ -162,6 +176,22 @@ export default component$(() => {
             {createAction.value?.failed && (
               <Errors errors={createAction.value.fieldErrors.dir} />
             )}
+
+            {!createAction.value?.failed &&
+              typeof createAction.value?.success !== "undefined" && (
+                <div>
+                  {createAction.value.success && (
+                    <small class="text-green-600">
+                      {createAction.value.message}
+                    </small>
+                  )}
+                  {!createAction.value.success && (
+                    <small class="text-red-600">
+                      {createAction.value.message || "Failed to create project"}
+                    </small>
+                  )}
+                </div>
+              )}
 
             <div class="grid grid-cols-2 gap-5 ">
               <button
