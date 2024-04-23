@@ -1,8 +1,15 @@
-import { pgTable, uuid, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  integer,
+  serial,
+  text,
+  timestamp,
+  boolean,
+} from "drizzle-orm/pg-core";
 // import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const project = pgTable("projects", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull(),
   workingDir: text("working_dir").notNull(),
@@ -23,9 +30,9 @@ export type InsertProject = Omit<
 export type SelectProject = typeof project.$inferSelect;
 
 export const key = pgTable("keys", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  projectId: uuid("project_id")
+  projectId: integer("project_id")
     .references(() => project.id)
     .notNull(),
   token: text("token").notNull(),
