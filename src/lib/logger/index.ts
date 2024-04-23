@@ -37,6 +37,7 @@ export function createDailyRotateFileTransport(
   options: DailyRotateFile.DailyRotateFileTransportOptions = {},
 ) {
   return new DailyRotateFile({
+    // @ts-ignore
     filename: "%DATE%.log",
     datePattern: "YYYY-MM-DD-HH",
     zippedArchive: true,
