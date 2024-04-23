@@ -1,47 +1,12 @@
 {
   "version": "5",
-  "dialect": "sqlite",
+  "dialect": "pg",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1713544369136,
-      "tag": "0000_minor_nova",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1713572706943,
-      "tag": "0001_chunky_adam_warlock",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1713577041502,
-      "tag": "0002_strange_dreaming_celestial",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1713577592240,
-      "tag": "0003_breezy_sleepwalker",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1713589485515,
-      "tag": "0004_large_agent_zero",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1713590121573,
-      "tag": "0005_fixed_mimic",
+      "when": 1713908151302,
+      "tag": "0000_pale_legion",
       "breakpoints": true
     }
   ]
