@@ -120,7 +120,7 @@ export default component$(() => {
           {projects.value.map((p) => (
             <li key={p.id} class="border border-b-gray-700 last:border-none">
               <Link
-                href={`/dashboard/${p.id}`}
+                href={`/dashboard/${p.slug}`}
                 class="flex px-5 py-4 capitalize text-gray-800 hover:bg-slate-50 "
               >
                 {p.name}

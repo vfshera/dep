@@ -12,14 +12,14 @@ import {
 
 import { scriptLogger } from "~/lib/logger";
 import * as u from "~/lib/logger/utils";
-import { getProjectById } from "~/db/queries";
+import { getProjectBySlug } from "~/db/queries";
 import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
 import { isRunnableJob, loadWorkflow, validateWorkflow } from "~/lib/workflow";
 import path from "node:path";
 import sh from "~/lib/shell";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
-  const project = await getProjectById(params.project);
+  const project = await getProjectBySlug(params.project);
 
   if (!project) {
     status(404);
@@ -34,7 +34,7 @@ export const useLogs = routeLoader$(
 
     if (!p) return [];
 
-    return u.getLogs(p.id);
+    return u.getLogs(p.slug);
   },
 );
 
@@ -199,14 +199,17 @@ export default component$(() => {
         }
 
         streamResponse.value = [...streamResponse.value, i];
-        await logDeployment(project.value.id, [i]);
+        await logDeployment(project.value.slug, [i]);
       }
     } catch (err) {
       console.log({ err });
     }
 
     isDeploying.value = false;
-    window.location.reload();
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (window) {
+      window.location.reload();
+    }
   });
 
   return (
