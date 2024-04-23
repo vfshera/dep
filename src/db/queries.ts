@@ -1,20 +1,33 @@
+import { desc, eq, or } from "drizzle-orm";
 import db from ".";
 import type { InsertProject } from "./schema";
-import { project } from "./schema";
+import { projects } from "./schema";
 
 export async function createProject(data: InsertProject) {
   return db
-    .insert(project)
+    .insert(projects)
     .values(data)
-    .returning({ id: project.id, slug: project.slug });
+    .returning({ id: projects.id, slug: projects.slug });
 }
 
 export async function getProjectById(id: string) {
-  return db.query.project.findFirst({
-    where: (users, { eq }) => eq(users.id, id),
+  return db.query.projects.findFirst({
+    where: (proj) => eq(proj.id, Number(id)),
+  });
+}
+
+export async function getProjectBySlug(slug: string) {
+  return db.query.projects.findFirst({
+    where: (proj) => eq(proj.slug, slug),
+  });
+}
+
+export async function checkIfProjectExists(slug: string, dir: string) {
+  return db.query.projects.findFirst({
+    where: (proj) => or(eq(proj.slug, slug), eq(proj.workingDir, dir)),
   });
 }
 
 export async function getProjects() {
-  return db.query.project.findMany();
+  return db.query.projects.findMany({ orderBy: desc(projects.createdAt) });
 }
