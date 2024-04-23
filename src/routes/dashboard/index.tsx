@@ -12,7 +12,7 @@ import {
 import Input from "~/components/ui/form/Input";
 import Errors from "~/components/ui/form/Errors";
 import { WORKING_DIR_KEY } from "~/constants";
-import { createProject, getProjects } from "~/db/queries";
+import { checkIfProjectExists, createProject, getProjects } from "~/db/queries";
 import { validateWorkflow } from "~/lib/workflow";
 import { toast } from "qwik-sonner";
 
@@ -39,14 +39,32 @@ export const useCreateProject = routeAction$(
       return { success: validation.ok, message: validation.message };
     }
 
-    const [p] = await createProject({
+    const newProject = {
       name: data.name,
       slug: slugify(data.name, { lower: true, trim: true }),
       workingDir: data.dir,
       active: true,
-    });
+    };
 
-    toast.success(p.slug);
+    const existingProject = await checkIfProjectExists(
+      newProject.slug,
+      newProject.workingDir,
+    );
+
+    if (existingProject) {
+      toast.error("Project already exists!");
+
+      return { success: false, message: "Project already exists!" };
+    }
+
+    const [p] = await createProject(newProject);
+
+    if (!p.id) {
+      toast.error("Failed to create project!");
+
+      return { success: false, message: "Failed to create project!" };
+    }
+
     toast.success("Project created successfully");
 
     return { success: true, message: "Project created successfully" };
