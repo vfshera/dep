@@ -1,8 +1,8 @@
 import { Slot, component$ } from "@builder.io/qwik";
-import Nav from "./Nav";
 import { type RequestHandler, type DocumentHead } from "@builder.io/qwik-city";
 import { Toaster } from "qwik-sonner";
 import { type Session } from "@auth/core/types";
+import Sidebar from "./Sidebar";
 
 export const onRequest: RequestHandler = async (event) => {
   const session: Session | null = event.sharedMap.get("session");
@@ -23,20 +23,11 @@ export const onRequest: RequestHandler = async (event) => {
 
 export default component$(() => {
   return (
-    <main class="flex min-h-screen flex-col">
-      <Nav />
+    <main class="bg-dark-1 flex min-h-screen flex-col  text-white">
+      <div class="grid flex-1 grid-cols-[300px,1fr]">
+        <Sidebar />
 
-      <div class="grid flex-1 grid-cols-[350px,1fr]">
-        <div class="p-5">
-          {/*  <div class="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
-          <Link href={`/dashboard/${t.value.id}`} class="font-semibold">
-            {t.value.name} Template
-          </Link>
-          <p class="mt-2 text-sm text-gray-600">{t.value.description}</p>
-        </div> */}
-        </div>
-
-        <div class="flex flex-col gap-5 p-5">
+        <div class="border-dark-3 flex flex-col gap-5 border-l p-5">
           <Slot />
         </div>
       </div>
