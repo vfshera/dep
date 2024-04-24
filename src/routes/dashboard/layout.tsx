@@ -23,11 +23,11 @@ export const onRequest: RequestHandler = async (event) => {
 
 export default component$(() => {
   return (
-    <main class="bg-dark-1 flex min-h-screen flex-col  text-white">
+    <main class="flex min-h-screen flex-col bg-dark-1  text-white">
       <div class="grid flex-1 grid-cols-[300px,1fr]">
         <Sidebar />
 
-        <div class="border-dark-3 flex flex-col gap-5 border-l p-5">
+        <div class="flex flex-col gap-5 border-l border-dark-3 p-5">
           <Slot />
         </div>
       </div>
