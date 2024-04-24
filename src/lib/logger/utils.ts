@@ -1,7 +1,4 @@
-
- 
-
-import { ScriptYield } from "~/types";
+import type { ScriptYield } from "~/types";
 import { scriptLogger } from ".";
 import { type QueryOptions } from "winston";
 import { prettyLogs } from "~/utils";

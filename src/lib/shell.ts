@@ -98,9 +98,7 @@ export async function mv(from: string, to: string) {
 export async function exists(needle:string|string[],haystack:string){
     const res = await exec(`ls -a ${haystack}`);
 
- const dirs =res.stdout.split("\n") .filter(Boolean)
- 
- 
+     const dirs =res.stdout.split("\n") .filter(Boolean);
     
     if (res.stderr !== "") {
       
@@ -123,9 +121,11 @@ export async function exists(needle:string|string[],haystack:string){
 export async function makeExecutable(file:string){
     try {
         await exec(`chmod +x ${file}`);
+
         return{ok: true};
     } catch (error) {
         console.error("Error making script executable:", error);
+
         return {ok:false};
     }
 }
