@@ -93,11 +93,11 @@ export default component$(() => {
   return (
     <div class="space-y-5 ">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">Projects</h1>
+        <h1 class="text-xl font-semibold">Projects</h1>
 
         <button
           onClick$={() => addDialogRef.value?.showModal()}
-          class="flex items-center gap-1 rounded-xl bg-black p-2.5 pl-4 pr-5 text-white disabled:cursor-not-allowed disabled:text-white/70"
+          class="flex items-center gap-1 rounded-xl bg-black py-2 pl-4 pr-5 text-white disabled:cursor-not-allowed disabled:text-white/70 dark:bg-white/90 dark:text-[#111]"
         >
           <svg
             class="h-auto w-5 shrink-0"
@@ -116,12 +116,15 @@ export default component$(() => {
       </div>
 
       {projects.value.length > 0 ? (
-        <ul class="border border-gray-700">
+        <ul class="space-y-1">
           {projects.value.map((p) => (
-            <li key={p.id} class="border border-b-gray-700 last:border-none">
+            <li
+              key={p.id}
+              class="bg-dark-2 hover:bg-dark-3 rounded transition-colors"
+            >
               <Link
                 href={`/dashboard/${p.slug}`}
-                class="flex px-5 py-4 capitalize text-gray-800 hover:bg-slate-50 "
+                class="text-light-2 flex px-5 py-3 capitalize"
               >
                 {p.name}
               </Link>

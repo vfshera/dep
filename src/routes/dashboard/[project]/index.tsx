@@ -217,14 +217,13 @@ export default component$(() => {
       <div class="flex justify-between">
         <div>
           <h2 class="text-2xl capitalize">{project.value.name}</h2>
-          <span class="inline-block rounded-full border border-current px-2 py-0.5 text-xs text-gray-600">
+          <span class="text-light-2 inline-block rounded-full border border-current px-2 py-0.5 text-xs">
             {project.value.slug}
           </span>
         </div>
         <div class="flex items-center gap-5">
-          <button>API</button>
           <button
-            class="flex items-center gap-1 rounded-xl bg-black p-2.5 pl-4 pr-5 text-white disabled:cursor-not-allowed disabled:text-white/70"
+            class="disabled:text-dark-3 flex items-center gap-1 rounded-xl bg-white p-2.5 pl-4 pr-5 text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed"
             disabled={isDeploying.value}
             onClick$={deploy}
           >
@@ -265,8 +264,8 @@ export default component$(() => {
           </button>
         </div>
       </div>
-      <hr />
-      <div class="flex-1 rounded bg-[#111] px-3 py-5">
+
+      <div class="bg-dark-2 max-h-[80vh] flex-1 overflow-y-auto rounded px-3 py-5">
         {isDeploying.value ? (
           <ul>
             {streamResponse.value
@@ -301,16 +300,16 @@ export default component$(() => {
               {logs.value.length > 0 ? "Build logs:" : "No build logs"}
             </p>
 
-            <div class="mt-2.5 space-y-2.5">
+            <div class="mt-2.5 space-y-3">
               {logs.value.map((logGroup, index) => (
                 <div
                   key={`${index}-${logGroup.timestamp.raw}`}
-                  class="space-y-2 pt-2.5 first:pt-0"
+                  class="pt-2.5 first:pt-0"
                 >
-                  <span class="inline-block bg-white/90 px-2">
+                  <span class="bg-dark-3 inline-block p-2 text-sm text-white">
                     Run: {logGroup.timestamp.relative}
                   </span>
-                  <ul>
+                  <ul class="border-dark-3 border-l-2 py-2 pl-2">
                     {logGroup.items
                       .filter((l) => l.level !== "end")
                       .map((buildLog, i) => (
