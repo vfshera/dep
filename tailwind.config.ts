@@ -10,6 +10,17 @@ export default {
       fontFamily: {
         geist: ["Geist Sans", ...defaultTheme.fontFamily.serif],
       },
+      colors: {
+        light: {
+          1: "#4e4d55",
+          2: "#f3f3f3",
+        },
+        dark: {
+          1: "#161618",
+          2: "#1c1c1f",
+          3: "#47474b",
+        },
+      },
     },
   },
   plugins: [
