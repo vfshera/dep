@@ -217,13 +217,13 @@ export default component$(() => {
       <div class="flex justify-between">
         <div>
           <h2 class="text-2xl capitalize">{project.value.name}</h2>
-          <span class="text-light-2 inline-block rounded-full border border-current px-2 py-0.5 text-xs">
+          <span class="inline-block rounded-full border border-current px-2 py-0.5 text-xs text-light-2">
             {project.value.slug}
           </span>
         </div>
         <div class="flex items-center gap-5">
           <button
-            class="disabled:text-dark-3 flex items-center gap-1 rounded-xl bg-white p-2.5 pl-4 pr-5 text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed"
+            class="flex items-center gap-1 rounded-xl bg-white p-2.5 pl-4 pr-5 text-black transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:text-dark-3"
             disabled={isDeploying.value}
             onClick$={deploy}
           >
@@ -265,7 +265,7 @@ export default component$(() => {
         </div>
       </div>
 
-      <div class="bg-dark-2 max-h-[80vh] flex-1 overflow-y-auto rounded px-3 py-5">
+      <div class="max-h-[80vh] flex-1 overflow-y-auto rounded bg-dark-2 px-3 py-5">
         {isDeploying.value ? (
           <ul>
             {streamResponse.value
@@ -306,10 +306,10 @@ export default component$(() => {
                   key={`${index}-${logGroup.timestamp.raw}`}
                   class="pt-2.5 first:pt-0"
                 >
-                  <span class="bg-dark-3 inline-block p-2 text-sm text-white">
+                  <span class="inline-block bg-dark-3 p-2 text-sm text-white">
                     Run: {logGroup.timestamp.relative}
                   </span>
-                  <ul class="border-dark-3 border-l-2 py-2 pl-2">
+                  <ul class="border-l-2 border-dark-3 py-2 pl-2">
                     {logGroup.items
                       .filter((l) => l.level !== "end")
                       .map((buildLog, i) => (

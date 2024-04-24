@@ -120,11 +120,11 @@ export default component$(() => {
           {projects.value.map((p) => (
             <li
               key={p.id}
-              class="bg-dark-2 hover:bg-dark-3 rounded transition-colors"
+              class="rounded bg-dark-2 transition-colors hover:bg-dark-3"
             >
               <Link
-                href={`/dashboard/${p.slug}`}
-                class="text-light-2 flex px-5 py-3 capitalize"
+                href={`/dashboard/project/${p.slug}`}
+                class="flex px-5 py-3 capitalize text-light-2"
               >
                 {p.name}
               </Link>
