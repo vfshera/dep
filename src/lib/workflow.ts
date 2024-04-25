@@ -64,7 +64,7 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
     };
   }
 
-  return { ok: true , message: "" };
+  return { ok: true, message: "" };
 }
 
 export async function loadWorkflow(workingDir: string) {

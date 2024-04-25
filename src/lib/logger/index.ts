@@ -1,4 +1,4 @@
-import * as winston from "winston"; 
+import * as winston from "winston";
 
 import DailyRotateFile from "winston-daily-rotate-file";
 
@@ -66,6 +66,5 @@ export function scriptLogger(options: { id: string }) {
     ],
   });
 }
-
 
 export default createWinstonLogger();

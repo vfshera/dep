@@ -1,6 +1,6 @@
 import sh from "node:child_process";
 
-import {promisify}from "node:util"
+import { promisify } from "node:util";
 
 export const exec = promisify(sh.exec);
 
@@ -11,7 +11,7 @@ export const exec = promisify(sh.exec);
  * @return {Promise<void>} a Promise that resolves after creating the file
  */
 export async function touch(path: string) {
-    return exec(`touch ${path}`);
+  return exec(`touch ${path}`);
 }
 
 /**
@@ -21,7 +21,7 @@ export async function touch(path: string) {
  * @return {Promise<string>} the result of listing the directory
  */
 export async function ls(dir: string) {
-    return exec(`ls ${dir}`);
+  return exec(`ls ${dir}`);
 }
 
 /**
@@ -31,7 +31,7 @@ export async function ls(dir: string) {
  * @return {Promise<string>} a promise that resolves with the content of the file
  */
 export async function cat(path: string) {
-    return exec(`cat ${path}`);
+  return exec(`cat ${path}`);
 }
 
 /**
@@ -41,9 +41,9 @@ export async function cat(path: string) {
  * @return {Promise<void>} a Promise that resolves after creating the directory
  */
 export async function mkdir(path: string) {
-    return exec(`mkdir ${path}`);
+  return exec(`mkdir ${path}`);
 }
- 
+
 /**
  * Change the current working directory to the specified directory.
  *
@@ -51,7 +51,7 @@ export async function mkdir(path: string) {
  * @return {Promise<void>} a promise that resolves when the directory change is complete
  */
 export async function cd(dir: string) {
-    return exec(`cd ${dir}`);
+  return exec(`cd ${dir}`);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function cd(dir: string) {
  * @return {Promise<string>} The current working directory path.
  */
 export async function pwd() {
-    return exec("pwd");
+  return exec("pwd");
 }
 
 /**
@@ -71,7 +71,7 @@ export async function pwd() {
  * @return {Promise<void>} a Promise that resolves when the file is successfully copied
  */
 export async function cp(from: string, to: string) {
-    return exec(`cp ${from} ${to}`);
+  return exec(`cp ${from} ${to}`);
 }
 
 /**
@@ -81,7 +81,7 @@ export async function cp(from: string, to: string) {
  * @return {Promise<void>} a promise that resolves after the file or directory is removed
  */
 export async function rm(path: string) {
-    return exec(`rm ${path}`);
+  return exec(`rm ${path}`);
 }
 
 /**
@@ -92,29 +92,27 @@ export async function rm(path: string) {
  * @return {Promise<string>} - a promise that resolves with the output of the `mv` command
  */
 export async function mv(from: string, to: string) {
-    return exec(`mv ${from} ${to}`);
+  return exec(`mv ${from} ${to}`);
 }
 
-export async function exists(needle:string|string[],haystack:string){
-    const res = await exec(`ls -a ${haystack}`);
+export async function exists(needle: string | string[], haystack: string) {
+  const res = await exec(`ls -a ${haystack}`);
 
-     const dirs =res.stdout.split("\n") .filter(Boolean);
-    
-    if (res.stderr !== "") {
-      
-        return {ok:false,error:res.stderr}
-    }
+  const dirs = res.stdout.split("\n").filter(Boolean);
 
-    if (typeof needle === "string" &&!dirs.includes(needle)) {
-     return {ok:false}
-    }
+  if (res.stderr !== "") {
+    return { ok: false, error: res.stderr };
+  }
 
-    if (Array.isArray(needle) && !needle.some((dir) => dirs.includes(dir))) {
-        return {ok:false}
-    }
+  if (typeof needle === "string" && !dirs.includes(needle)) {
+    return { ok: false };
+  }
 
-    return {ok:true}
- }
- 
-export default sh
+  if (Array.isArray(needle) && !needle.some((dir) => dirs.includes(dir))) {
+    return { ok: false };
+  }
 
+  return { ok: true };
+}
+
+export default sh;
