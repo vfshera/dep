@@ -115,20 +115,6 @@ export async function exists(needle:string|string[],haystack:string){
 
     return {ok:true}
  }
-
-
-
-export async function makeExecutable(file:string){
-    try {
-        await exec(`chmod +x ${file}`);
-
-        return{ok: true};
-    } catch (error) {
-        console.error("Error making script executable:", error);
-
-        return {ok:false};
-    }
-}
  
 export default sh
 
