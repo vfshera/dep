@@ -3,4 +3,8 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   }, 
+  "workbench.editor.customLabels.patterns":{
+    "src/routes/**/index.tsx":"${dirname} - Page",
+    "src/routes/**/layout.tsx":"${dirname} - Layout"
+  }
 }
