@@ -14,10 +14,6 @@ export function cn(...classes: ClassNameValue[]) {
 export function relativeTime(date: Date | number, from?: Date): string {
   const fromTime = from?.getTime() || Date.now();
 
-  if (from) {
-    console.log({ from, date, ft: from.getTime(), fromTime });
-  }
-
   // Allow dates or times to be passed
   const timeMs = typeof date === "number" ? date : date.getTime();
 

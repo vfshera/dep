@@ -1,4 +1,4 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { $, component$, useSignal } from "@builder.io/qwik";
 import slugify from "slugify";
 import {
   routeAction$,
@@ -142,7 +142,7 @@ export default component$(() => {
           <Form
             action={createAction}
             class="space-y-5"
-            onSubmitCompleted$={() => {
+            onSubmitCompleted$={$(() => {
               if (createAction.value?.success) {
                 toast.success(
                   createAction.value.message || "Project created successfully",
@@ -156,7 +156,7 @@ export default component$(() => {
                   createAction.value?.message || "Failed to create project",
                 );
               }
-            }}
+            })}
           >
             <Input type="text" placeholder="Name" name="name" />
 
