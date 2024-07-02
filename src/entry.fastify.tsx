@@ -10,6 +10,7 @@
 import { type PlatformNode } from "@builder.io/qwik-city/middleware/node";
 import "dotenv/config";
 import Fastify from "fastify";
+import type { FastifyServerOptions } from "fastify";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import FastifyQwik from "./plugins/fastify-qwik";
@@ -28,16 +29,30 @@ const PORT = parseInt(process.env.PORT ?? "3000");
 
 const HOST = process.env.HOST ?? "0.0.0.0";
 
+const fastifyOptions: FastifyServerOptions = {};
+
+if (process.stdout.isTTY) {
+  fastifyOptions.logger = {
+    level: "debug",
+    transport: {
+      target: "@fastify/one-line-logger",
+    },
+  };
+} else {
+  fastifyOptions.logger = {
+    level: "warn",
+    transport: {
+      target: "pino-roll",
+      options: { frequency: "daily", mkdir: true, size: "10m" },
+    },
+  };
+}
+
 const start = async () => {
   // Create the fastify server
-  // https://fastify.dev/docs/latest/Guides/Getting-Started/
-  const fastify = Fastify({
-    logger: true,
-  });
+  const fastify = Fastify(fastifyOptions);
 
   // Enable compression
-  // https://github.com/fastify/fastify-compress
-  // IMPORTANT NOTE: THIS MUST BE REGISTERED BEFORE THE fastify-qwik PLUGIN
   await fastify.register(import("@fastify/compress"));
 
   // Handle Qwik City using a plugin
