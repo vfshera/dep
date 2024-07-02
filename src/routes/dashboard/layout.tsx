@@ -3,6 +3,7 @@ import { type RequestHandler, type DocumentHead } from "@builder.io/qwik-city";
 import { Toaster } from "qwik-sonner";
 import { type Session } from "@auth/core/types";
 import Sidebar from "./Sidebar";
+import { useAppContext } from "~/context/app-context";
 
 export const onRequest: RequestHandler = async (event) => {
   const session: Session | null = event.sharedMap.get("session");
@@ -22,9 +23,18 @@ export const onRequest: RequestHandler = async (event) => {
 };
 
 export default component$(() => {
+  const appStore = useAppContext();
+
   return (
-    <main class="flex min-h-screen flex-col bg-dark-1  text-white">
-      <div class="grid flex-1 grid-cols-[300px,1fr]">
+    <main
+      class={[
+        "flex h-screen flex-col overflow-hidden  bg-dark-1 text-white",
+        appStore.sidebarCollapsed
+          ? "[--sidebar-width:70px]"
+          : "[--sidebar-width:300px]",
+      ]}
+    >
+      <div class="grid flex-1 grid-cols-[var(--sidebar-width,300px),1fr] transition-[grid-template-columns] duration-300 ease-in-out">
         <Sidebar />
 
         <div class="flex flex-col gap-5 border-l border-dark-3 p-5">
