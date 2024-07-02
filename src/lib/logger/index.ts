@@ -49,19 +49,21 @@ export function createDailyRotateFileTransport(
 }
 
 export function scriptLogger(options: { id: string }) {
+  const DIR = `logs/deployments/${options.id}`;
+
   return createWinstonLogger({
     level: "end",
     levels: { ...levels, data: 3, success: 4, start: 5, end: 6 },
     transports: [
       createDailyRotateFileTransport({
-        dirname: `logs/${options.id}`,
+        dirname: DIR,
         json: true,
       }),
     ],
     exceptionHandlers: [
       new winston.transports.File({
         filename: "exceptions.log",
-        dirname: `logs/${options.id}`,
+        dirname: DIR,
       }),
     ],
   });
