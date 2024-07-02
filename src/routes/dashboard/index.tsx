@@ -132,27 +132,29 @@ export default component$(() => {
         </button>
       </div>
 
-      {projectData.value.projects.length > 0 ? (
-        <ul class="space-y-1">
-          {projectData.value.projects.map((p) => (
-            <li
-              key={p.id}
-              class="rounded bg-dark-2 transition-colors hover:bg-dark-3"
-            >
-              <Link
-                href={`/dashboard/project/${p.slug}`}
-                class="flex px-5 py-3 capitalize text-light-2"
+      <div class="max-h-[90vh] overflow-y-auto">
+        {projectData.value.projects.length > 0 ? (
+          <ul class="space-y-1">
+            {projectData.value.projects.map((p) => (
+              <li
+                key={p.id}
+                class="rounded bg-dark-2 transition-colors hover:bg-dark-3"
               >
-                {p.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div class="flex items-center justify-center p-10">
-          <p>No Projects found!</p>
-        </div>
-      )}
+                <Link
+                  href={`/dashboard/project/${p.slug}`}
+                  class="flex px-5 py-3 capitalize text-light-2"
+                >
+                  {p.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="flex items-center justify-center p-10">
+            <p>No Projects found!</p>
+          </div>
+        )}
+      </div>
 
       <dialog ref={addDialogRef} class="bg-transparent backdrop:bg-black/70">
         <div class="mt-[20vh] rounded bg-white p-8">

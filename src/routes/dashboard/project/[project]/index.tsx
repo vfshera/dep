@@ -283,7 +283,7 @@ export default component$(() => {
         </div>
       </div>
 
-      <div class="flex-1">
+      <div class="max-h-[90vh] flex-1 overflow-y-auto">
         <div class="h-full overflow-y-auto py-5 pr-3">
           {isDeploying.value ? (
             <LogStream logs={streamResponse} isDone={IsDone} />
