@@ -95,11 +95,12 @@ export default component$(() => {
   const autocomplete = useComputed$(() => {
     const plist = projectData.value.currentProjects.projects?.map((p) => {
       const isAvailable = projectData.value.projects.some(
-        (project) => project.workingDir === p,
+        (project) =>
+          project.workingDir === p.name || project.workingDir === p.repo,
       );
 
       return {
-        slug: p,
+        slug: p.repo || p.name,
         isValid: !isAvailable,
       };
     });
@@ -182,18 +183,6 @@ export default component$(() => {
             {createAction.value?.failed && (
               <Errors errors={createAction.value.fieldErrors.name} />
             )}
-
-            {/* <div class="flex items-center rounded  border border-black px-2 py-1">
-              <span class="text-gray-800">BASE_DIR </span>
-              <span class="text-lg font-medium text-gray-800">/</span>
-
-              <Input
-                type="text"
-                placeholder="Directory"
-                name="dir"
-                class="bg-white px-2 py-0.5"
-              />
-            </div> */}
 
             <select
               name="dir"

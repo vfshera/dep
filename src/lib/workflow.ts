@@ -6,6 +6,8 @@ import YAML from "yaml";
 import fg from "fast-glob";
 import { z } from "@builder.io/qwik-city";
 
+import simpleGit from "simple-git";
+
 const runJobSchema = z.object({
   name: z.string(),
   run: z.string(),
@@ -115,21 +117,78 @@ export async function listProjects(projectsDir: string) {
   try {
     await fs.access(projectsDir, fs.constants.R_OK);
 
-    const projectFiles = await fs.readdir(projectsDir);
+    const files = await fs.readdir(projectsDir);
 
-    const validFiles = await Promise.all(
-      projectFiles.map(async (pf) => {
+    const projectFiles = await Promise.all(
+      files.map(async (pf) => {
         const validation = await validateWorkflow(pf, projectsDir);
 
         return { name: pf, valid: validation.ok };
       }),
     );
 
+    const validFiles = projectFiles
+      .filter((pf) => pf.valid)
+      .map((pf) => pf.name);
+
+    const projctWithRepo = await Promise.all(
+      validFiles.map(async (pf) => {
+        const projectPath = `${projectsDir}/${pf}`;
+
+        const gitInfo = await getGitRemoteUrl(projectPath);
+
+        return {
+          name: pf,
+          repo: gitInfo.repoName,
+        };
+      }),
+    );
+
     return {
       ok: true,
-      projects: validFiles.filter((pf) => pf.valid).map((pf) => pf.name),
+      projects: projctWithRepo,
     };
   } catch (err) {
     return { ok: false };
+  }
+}
+
+function extractRepoName(url: string) {
+  const regex = /([^/]+)\.git$/;
+
+  const match = url.match(regex);
+
+  return match ? match[1] : null;
+}
+
+async function getGitRemoteUrl(projectPath: string) {
+  const git = simpleGit(projectPath);
+
+  try {
+    const isRepo = await git.checkIsRepo();
+
+    if (!isRepo) {
+      return { url: null, repoName: null };
+    }
+
+    const remotes = await git.getRemotes(true);
+
+    const origin = remotes.find((remote) => remote.name === "origin");
+
+    const url = origin ? origin.refs.fetch : remotes[0].refs.fetch;
+
+    const repoName = extractRepoName(url);
+
+    return { url, repoName };
+  } catch (err) {
+    let message = "";
+
+    if (err instanceof Error) {
+      message = err.message;
+    }
+
+    console.error(`Error fetching remote URL for ${projectPath}:`, message);
+
+    return { url: null, repoName: null };
   }
 }
