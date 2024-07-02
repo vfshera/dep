@@ -1,12 +1,12 @@
 {
   "version": "5",
-  "dialect": "pg",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1713919718177,
-      "tag": "0000_legal_loa",
+      "when": 1719928508598,
+      "tag": "0000_large_richard_fisk",
       "breakpoints": true
     }
   ]

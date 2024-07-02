@@ -1,7 +1,10 @@
-import "dotenv/config";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
-import db, { connection } from ".";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 
-await migrate(db, { migrationsFolder: "./drizzle" });
+const sqlite = new Database("sqlite.db");
 
-await connection.end();
+const db = drizzle(sqlite);
+
+// this will automatically run needed migrations on the database
+migrate(db, { migrationsFolder: "./drizzle" });
