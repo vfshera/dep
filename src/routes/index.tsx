@@ -1,5 +1,4 @@
 import { component$ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
 
 export default component$(() => {
   return (
@@ -10,12 +9,12 @@ export default component$(() => {
         <h1 class="relative z-20 bg-gradient-to-b from-neutral-200 to-neutral-500 bg-clip-text py-8 text-4xl font-bold text-transparent sm:text-7xl">
           Deployer
         </h1>
-        <Link
+        <a
           href="/dashboard"
           class="mt-5 rounded-full border border-blue-700 bg-black/60 px-8 py-4 text-neutral-200"
         >
           Go to Dashboard
-        </Link>
+        </a>
       </div>
     </main>
   );

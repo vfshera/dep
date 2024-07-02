@@ -1,6 +1,5 @@
 import { component$ } from "@builder.io/qwik";
 import { useAuthSession, useAuthSignout } from "../plugin@auth";
-import { Link } from "@builder.io/qwik-city";
 
 export default component$(() => {
   const session = useAuthSession();
@@ -9,12 +8,12 @@ export default component$(() => {
 
   return (
     <aside>
-      <Link
+      <a
         href="/dashboard"
         class="block p-5 text-xl font-bold tracking-tight hover:bg-dark-3 dark:text-white"
       >
         Dashboard
-      </Link>
+      </a>
 
       <div class="space-y-5 *:p-5">
         <div class="flex flex-col gap-1  border-y border-dark-3 text-light-2">
