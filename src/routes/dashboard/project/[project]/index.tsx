@@ -2,8 +2,7 @@ import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { toast } from "qwik-sonner";
 
 import type { ScriptYield } from "~/types";
-import type { prettyLogs } from "~/utils";
-import { cn } from "~/utils";
+import type { PrettyLogsOutput } from "~/utils";
 import {
   type DocumentHead,
   routeLoader$,
@@ -11,12 +10,14 @@ import {
 } from "@builder.io/qwik-city";
 
 import { scriptLogger } from "~/lib/logger";
-import * as u from "~/lib/logger/utils";
+import * as logUtils from "~/lib/logger/utils";
 import { getProjectBySlug } from "~/db/queries";
 import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
 import { isRunnableJob, loadWorkflow, validateWorkflow } from "~/lib/workflow";
 import path from "node:path";
 import sh from "~/lib/shell";
+import LogStream from "./LogStream";
+import LogGroup from "./LogGroup";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
@@ -29,12 +30,12 @@ export const useProject = routeLoader$(async ({ params, status }) => {
 });
 
 export const useLogs = routeLoader$(
-  async ({ resolveValue }): Promise<ReturnType<typeof prettyLogs>> => {
+  async ({ resolveValue }): PrettyLogsOutput => {
     const p = await resolveValue(useProject);
 
     if (!p) return [];
 
-    return u.getLogs(p.slug);
+    return logUtils.getLogs(p.slug);
   },
 );
 
@@ -97,14 +98,25 @@ export const runActions = server$(async function* (
 
   const PROJECT_WD = path.join(BASE_DIR, dir, DEPLOY_DIR_NAME);
 
-  const actions = await loadWorkflow(PROJECT_WD);
+  const results = await loadWorkflow(PROJECT_WD);
 
-  yield u.start(actions.name);
+  if (!results.ok) {
+    yield {
+      type: "ERROR",
+      value: results.error,
+    };
+
+    throw Error(results.error);
+  }
+
+  const { actions } = results;
+
+  yield logUtils.start(actions.name);
 
   for (const key in actions.jobs) {
     const job = actions.jobs[key as keyof (typeof actions)["jobs"]];
 
-    yield u.info(job.name);
+    yield logUtils.info(job.name);
 
     if (isRunnableJob(job)) {
       const [com, ...cmds] = job.run.split(" ");
@@ -112,11 +124,11 @@ export const runActions = server$(async function* (
       const jobProcess = sh.spawn(com, cmds, { cwd: PROJECT_WD, shell: true });
 
       for await (const data of jobProcess.stdout) {
-        yield u.data((data.toString() as string).trim());
+        yield logUtils.data((data.toString() as string).trim());
       }
 
       for await (const data of jobProcess.stderr) {
-        yield u.error((data.toString() as string).trim());
+        yield logUtils.error((data.toString() as string).trim());
       }
 
       jobProcess.on("exit", (code) => {
@@ -124,7 +136,7 @@ export const runActions = server$(async function* (
       });
     } else {
       for (const step of job.steps) {
-        yield u.info(step.name);
+        yield logUtils.info(step.name);
         const [com, ...cmds] = step.run.split(" ");
 
         const stepProcess = sh.spawn(com, cmds, {
@@ -133,11 +145,11 @@ export const runActions = server$(async function* (
         });
 
         for await (const data of stepProcess.stdout) {
-          yield u.data((data.toString() as string).trim());
+          yield logUtils.data((data.toString() as string).trim());
         }
 
         for await (const data of stepProcess.stderr) {
-          yield u.error((data.toString() as string).trim());
+          yield logUtils.error((data.toString() as string).trim());
         }
 
         stepProcess.on("exit", (code) => {
@@ -147,7 +159,7 @@ export const runActions = server$(async function* (
     }
   }
 
-  yield u.end();
+  yield logUtils.end();
 });
 
 export default component$(() => {
@@ -202,7 +214,13 @@ export default component$(() => {
         await logDeployment(project.value.slug, [i]);
       }
     } catch (err) {
-      console.log({ err });
+      console.log("Deploy Error");
+
+      if (err instanceof Error) {
+        console.log(err.message);
+      }
+
+      return;
     }
 
     isDeploying.value = false;
@@ -265,87 +283,24 @@ export default component$(() => {
         </div>
       </div>
 
-      <div class="max-h-[80vh] flex-1 overflow-y-auto rounded bg-dark-2 px-3 py-5">
-        {isDeploying.value ? (
-          <ul>
-            {streamResponse.value
-              .filter((s) => s.type !== "END")
-              .map((s, i) => (
-                <li
-                  key={i + s.value}
-                  class={cn(
-                    "block",
-                    s.type === "INFO" && "mt-2",
-                    !IsDone.value && "last:animate-pulse",
-                  )}
-                >
-                  <pre
-                    class={cn(
-                      "block cursor-pointer  whitespace-break-spaces break-words rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
-                      s.type === "INFO" && "font-medium text-blue-400",
-                      s.type === "ERROR" && "text-red-500",
-                      s.type === "SUCCESS" && "text-green-500",
-                    )}
-                  >
-                    {s.type === "START" && "🚀 "}
-                    {s.type === "SUCCESS" && "✅ "}
-                    {s.type === "INFO" ? `[${s.value}]` : s.value}
-                  </pre>
-                </li>
-              ))}
-          </ul>
-        ) : (
-          <div>
-            <p class="font-semibold text-white ">
-              {logs.value.length > 0 ? "Build logs:" : "No build logs"}
-            </p>
+      <div class="flex-1">
+        <div class="h-full overflow-y-auto py-5 pr-3">
+          {isDeploying.value ? (
+            <LogStream logs={streamResponse} isDone={IsDone} />
+          ) : (
+            <div>
+              <p class="px-1 font-semibold text-white">
+                {logs.value.length > 0 ? "Build logs:" : "No build logs"}
+              </p>
 
-            <div class="mt-2.5 space-y-3">
-              {logs.value.map((logGroup, index) => (
-                <div
-                  key={`${index}-${logGroup.timestamp.raw}`}
-                  class="pt-2.5 first:pt-0"
-                >
-                  <span class="inline-block bg-dark-3 p-2 text-sm text-white">
-                    Run: {logGroup.timestamp.relative}
-                  </span>
-                  <ul class="border-l-2 border-dark-3 py-2 pl-2">
-                    {logGroup.items
-                      .filter((l) => l.level !== "end")
-                      .map((buildLog, i) => (
-                        <li
-                          key={i + buildLog.timestamp.raw}
-                          class={cn(
-                            "flex gap-3",
-                            buildLog.level === "info" && "mt-2",
-                          )}
-                        >
-                          <span class="shrink-0 text-sm text-white/90">
-                            {buildLog.timestamp.raw}
-                          </span>
-                          <pre
-                            class={cn(
-                              "block cursor-pointer whitespace-break-spaces  break-words rounded  px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
-                              buildLog.level === "info" &&
-                                "font-medium text-blue-400",
-                              buildLog.level === "error" && "text-red-500",
-                              buildLog.level === "success" && "text-green-500",
-                            )}
-                          >
-                            {buildLog.level === "start" && "🚀 "}
-                            {buildLog.level === "success" && "✅ "}
-                            {buildLog.level === "info"
-                              ? `[${buildLog.message}]`
-                              : buildLog.message}
-                          </pre>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ))}
+              <div class="mt-2.5 space-y-3">
+                {logs.value.map((logGroup, index) => (
+                  <LogGroup key={index} logGroup={logGroup} />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
