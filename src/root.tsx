@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useContextProvider, useStore } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -7,6 +7,7 @@ import {
 import { RouterHead } from "./components/common/Head";
 
 import "./global.css";
+import { AppContext } from "./context/app-context";
 
 export default component$(() => {
   /**
@@ -15,6 +16,10 @@ export default component$(() => {
    *
    * Don't remove the `<head>` and `<body>` elements.
    */
+
+  const appStore = useStore<AppContext>({ sidebarCollapsed: false });
+
+  useContextProvider(AppContext, appStore);
 
   return (
     <QwikCityProvider>
