@@ -1,4 +1,4 @@
-import { $, component$, useSignal } from "@builder.io/qwik";
+import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import slugify from "slugify";
 import {
   routeAction$,
@@ -13,13 +13,15 @@ import Input from "~/components/ui/form/Input";
 import Errors from "~/components/ui/form/Errors";
 import { WORKING_DIR_KEY } from "~/constants";
 import { checkIfProjectExists, createProject, getProjects } from "~/db/queries";
-import { validateWorkflow } from "~/lib/workflow";
+import { listProjects, validateWorkflow } from "~/lib/workflow";
 import { toast } from "qwik-sonner";
 
-export const useProjects = routeLoader$(async () => {
+export const useProjects = routeLoader$(async (ctx) => {
+  const list = await listProjects(ctx.env.get(WORKING_DIR_KEY) as string);
+
   const projects = await getProjects();
 
-  return projects;
+  return { projects, currentProjects: list };
 });
 
 export const useCreateProject = routeAction$(
@@ -84,11 +86,26 @@ export const useCreateProject = routeAction$(
 );
 
 export default component$(() => {
-  const projects = useProjects();
+  const projectData = useProjects();
 
   const addDialogRef = useSignal<HTMLDialogElement>();
 
   const createAction = useCreateProject();
+
+  const autocomplete = useComputed$(() => {
+    const plist = projectData.value.currentProjects.projects?.map((p) => {
+      const isAvailable = projectData.value.projects.some(
+        (project) => project.workingDir === p,
+      );
+
+      return {
+        slug: p,
+        isValid: !isAvailable,
+      };
+    });
+
+    return plist || [];
+  });
 
   return (
     <div class="space-y-5 ">
@@ -115,9 +132,9 @@ export default component$(() => {
         </button>
       </div>
 
-      {projects.value.length > 0 ? (
+      {projectData.value.projects.length > 0 ? (
         <ul class="space-y-1">
-          {projects.value.map((p) => (
+          {projectData.value.projects.map((p) => (
             <li
               key={p.id}
               class="rounded bg-dark-2 transition-colors hover:bg-dark-3"
@@ -164,7 +181,7 @@ export default component$(() => {
               <Errors errors={createAction.value.fieldErrors.name} />
             )}
 
-            <div class="flex items-center rounded  border border-black px-2 py-1">
+            {/* <div class="flex items-center rounded  border border-black px-2 py-1">
               <span class="text-gray-800">BASE_DIR </span>
               <span class="text-lg font-medium text-gray-800">/</span>
 
@@ -174,8 +191,24 @@ export default component$(() => {
                 name="dir"
                 class="bg-white px-2 py-0.5"
               />
-            </div>
+            </div> */}
 
+            <select
+              name="dir"
+              class="w-full rounded border border-black bg-transparent p-2.5 capitalize text-gray-700  accent-black "
+            >
+              <option value="">Select Project...</option>
+              {autocomplete.value.map((p) => (
+                <option
+                  value={p.slug}
+                  key={p.slug}
+                  disabled={!p.isValid}
+                  class="disabled:cursor-not-allowed disabled:text-gray-400"
+                >
+                  {p.slug}
+                </option>
+              ))}
+            </select>
             {createAction.value?.failed && (
               <Errors errors={createAction.value.fieldErrors.dir} />
             )}

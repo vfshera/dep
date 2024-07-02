@@ -1,7 +1,7 @@
 import path from "node:path";
 import { DEPLOY_DIR_NAME, DEPLOY_FILE_NAME } from "~/constants";
 import { exists } from "~/lib/shell";
-import * as fs from "node:fs";
+import * as fs from "node:fs/promises";
 import YAML from "yaml";
 import fg from "fast-glob";
 import { z } from "@builder.io/qwik-city";
@@ -34,6 +34,11 @@ export function isRunnableJob(obj: any): obj is RunnableJob {
 }
 
 export async function validateWorkflow(targetDir: string, baseDir: string) {
+  const projectPath = path.join(baseDir, targetDir);
+
+  /**
+   * Check if project exists
+   */
   let res = await exists(targetDir, baseDir);
 
   if (!res.ok) {
@@ -43,7 +48,10 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
     };
   }
 
-  res = await exists(DEPLOY_DIR_NAME, path.join(baseDir, targetDir));
+  /***
+   * Check if deploy directory exists
+   */
+  res = await exists(DEPLOY_DIR_NAME, projectPath);
 
   if (!res.ok) {
     return {
@@ -52,10 +60,10 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
     };
   }
 
-  res = await exists(
-    DEPLOY_FILE_NAME,
-    path.join(baseDir, targetDir, DEPLOY_DIR_NAME),
-  );
+  /**
+   * Check if deploy file exists
+   */
+  res = await exists(DEPLOY_FILE_NAME, path.join(projectPath, DEPLOY_DIR_NAME));
 
   if (!res.ok) {
     return {
@@ -64,18 +72,64 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
     };
   }
 
+  /***
+   * Try loading the file if error  it means the file is not valid
+   */
+
+  res = await loadWorkflow(path.join(projectPath, DEPLOY_DIR_NAME));
+
+  if (!res.ok) {
+    return { ok: false, message: res.error };
+  }
+
   return { ok: true, message: "" };
 }
 
-export async function loadWorkflow(workingDir: string) {
+/**
+ *Loads the deploy(.yml or .yaml) workflow file
+ * @param workingDir path to .dep directory *
+ */
+export async function loadWorkflow(
+  workingDir: string,
+): Promise<{ ok: true; actions: Workflow } | { ok: false; error: string }> {
   const [entry] = await fg(DEPLOY_FILE_NAME, {
     onlyFiles: true,
     cwd: workingDir,
   });
 
-  const file = fs.readFileSync(path.join(workingDir, entry), "utf-8");
+  const file = await fs.readFile(path.join(workingDir, entry), "utf-8");
 
-  const actions = workflowSchema.parse(YAML.parse(file));
+  const results = workflowSchema.safeParse(YAML.parse(file));
 
-  return actions;
+  if (!results.success) {
+    return {
+      error: "Invalid workflow file!",
+      ok: false,
+    };
+  }
+
+  return { actions: results.data, ok: true };
+}
+
+export async function listProjects(projectsDir: string) {
+  try {
+    await fs.access(projectsDir, fs.constants.R_OK);
+
+    const projectFiles = await fs.readdir(projectsDir);
+
+    const validFiles = await Promise.all(
+      projectFiles.map(async (pf) => {
+        const validation = await validateWorkflow(pf, projectsDir);
+
+        return { name: pf, valid: validation.ok };
+      }),
+    );
+
+    return {
+      ok: true,
+      projects: validFiles.filter((pf) => pf.valid).map((pf) => pf.name),
+    };
+  } catch (err) {
+    return { ok: false };
+  }
 }

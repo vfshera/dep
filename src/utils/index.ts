@@ -83,6 +83,8 @@ export function splitLogByLevels(array: LogOutput[]) {
   return segments;
 }
 
+export type PrettyLogsOutput = Promise<ReturnType<typeof prettyLogs>>;
+
 /**
  * Generate pretty logs with timestamps and sort them in descending order based on timestamp.
  *
