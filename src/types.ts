@@ -12,7 +12,15 @@ export type DeployScript<T = {}> = {
 };
 
 export type ScriptYield = {
-  type: "INFO" | "DATA" | "ERROR" | "WARN" | "END" | "START" | "SUCCESS";
+  type:
+    | "GITINFO"
+    | "INFO"
+    | "DATA"
+    | "ERROR"
+    | "WARN"
+    | "END"
+    | "START"
+    | "SUCCESS";
   value: string;
 };
 

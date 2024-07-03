@@ -192,3 +192,48 @@ async function getGitRemoteUrl(projectPath: string) {
     return { url: null, repoName: null };
   }
 }
+
+export async function getLastCommitInfo(projectPath: string) {
+  const git = simpleGit(projectPath);
+
+  try {
+    const isRepo = await git.checkIsRepo();
+
+    if (isRepo) {
+      const log = await git.log({ maxCount: 1 });
+
+      const lastCommit = log.latest
+        ? {
+            lastCommitHash: log.latest.hash,
+            lastCommitMessage: log.latest.message,
+            lastCommitTime: log.latest.date,
+          }
+        : null;
+
+      return lastCommit;
+    } else {
+      return {
+        lastCommitHash: null,
+        lastCommitMessage: null,
+        lastCommitTime: null,
+      };
+    }
+  } catch (err) {
+    let message = "";
+
+    if (err instanceof Error) {
+      message = err.message;
+    }
+
+    console.error(
+      `Error fetching last commit info for ${projectPath}:`,
+      message,
+    );
+
+    return {
+      lastCommitHash: null,
+      lastCommitMessage: null,
+      lastCommitTime: null,
+    };
+  }
+}

@@ -28,6 +28,10 @@ export async function getLogs(
   });
 }
 
+export function gitInfo(msg: string): ScriptYield {
+  return { type: "GITINFO", value: msg };
+}
+
 export function info(msg: string): ScriptYield {
   return { type: "INFO", value: msg };
 }

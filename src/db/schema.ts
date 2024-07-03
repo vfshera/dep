@@ -6,6 +6,7 @@ export const projects = sqliteTable("projects", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   name: text("name").unique().notNull(),
   slug: text("slug").unique().notNull(),
+  repo: text("repo").default(""),
   workingDir: text("working_dir").notNull(),
   active: integer("active", { mode: "boolean" }).default(false),
   createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),

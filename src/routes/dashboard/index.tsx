@@ -44,6 +44,7 @@ export const useCreateProject = routeAction$(
     const newProject = {
       name: data.name,
       slug: slugify(data.name, { lower: true, trim: true }),
+      repo: data.repo || "",
       workingDir: data.dir,
       active: true,
     };
@@ -73,6 +74,7 @@ export const useCreateProject = routeAction$(
   },
   zod$({
     name: z.string().min(5, "Name must be at least 5 characters long"),
+    repo: z.string().optional(),
     dir: z
       .string()
       .min(5, "Directory must be at least 5 characters long")
@@ -92,6 +94,8 @@ export default component$(() => {
 
   const createAction = useCreateProject();
 
+  const projectRepo = useSignal("");
+
   const autocomplete = useComputed$(() => {
     const plist = projectData.value.currentProjects.projects?.map((p) => {
       const isAvailable = projectData.value.projects.some(
@@ -100,8 +104,9 @@ export default component$(() => {
       );
 
       return {
-        slug: p.repo || p.name,
+        slug: p.name,
         isValid: !isAvailable,
+        repo: p.repo,
       };
     });
 
@@ -133,7 +138,7 @@ export default component$(() => {
         </button>
       </div>
 
-      <div class="max-h-[90vh] overflow-y-auto">
+      <div class="max-h-[88vh] overflow-y-auto">
         {projectData.value.projects.length > 0 ? (
           <ul class="space-y-1">
             {projectData.value.projects.map((p) => (
@@ -180,6 +185,13 @@ export default component$(() => {
           >
             <Input type="text" placeholder="Name" name="name" />
 
+            <input
+              class="hidden"
+              type="text"
+              name="repo"
+              bind:value={projectRepo}
+            />
+
             {createAction.value?.failed && (
               <Errors errors={createAction.value.fieldErrors.name} />
             )}
@@ -187,6 +199,13 @@ export default component$(() => {
             <select
               name="dir"
               class="w-full rounded border border-black bg-transparent p-2.5 capitalize text-gray-700  accent-black "
+              onChange$={(e, target) => {
+                const p = autocomplete.value.find(
+                  (p) => p.slug === target.value,
+                );
+
+                projectRepo.value = p?.repo || "";
+              }}
             >
               <option value="">Select Project...</option>
               {autocomplete.value.map((p) => (
@@ -223,7 +242,11 @@ export default component$(() => {
             <div class="grid grid-cols-2 gap-5 ">
               <button
                 type="submit"
-                class="rounded-xl bg-black py-2 pl-4 pr-5 text-center text-white hover:shadow-lg"
+                disabled={createAction.isRunning}
+                class={[
+                  "rounded-xl bg-black py-2 pl-4 pr-5 text-center text-white hover:shadow-lg",
+                  createAction.isRunning && "animate-pulse cursor-not-allowed",
+                ]}
               >
                 Create Project
               </button>

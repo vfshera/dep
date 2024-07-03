@@ -13,6 +13,7 @@ export default component$<LogStreamProps>(({ logs, isDone }) => {
       <ul>
         {logs.value
           .filter((s) => s.type !== "END")
+          .filter((s) => s.type !== "GITINFO")
           .map((s, i) => (
             <li
               key={i + s.value}

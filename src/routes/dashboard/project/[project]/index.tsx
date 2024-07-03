@@ -13,7 +13,12 @@ import { scriptLogger } from "~/lib/logger";
 import * as logUtils from "~/lib/logger/utils";
 import { getProjectBySlug } from "~/db/queries";
 import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
-import { isRunnableJob, loadWorkflow, validateWorkflow } from "~/lib/workflow";
+import {
+  getLastCommitInfo,
+  isRunnableJob,
+  loadWorkflow,
+  validateWorkflow,
+} from "~/lib/workflow";
 import path from "node:path";
 import sh from "~/lib/shell";
 import LogStream from "./LogStream";
@@ -49,6 +54,9 @@ export const logDeployment = server$(function (
 
   logs.forEach((i) => {
     switch (i.type) {
+      case "GITINFO":
+        logger.log({ level: "gitinfo", message: i.value });
+        break;
       case "INFO":
         logger.info(i.value);
         break;
@@ -108,6 +116,16 @@ export const runActions = server$(async function* (
 
     throw Error(results.error);
   }
+
+  const commit = await getLastCommitInfo(path.join(BASE_DIR, dir));
+
+  yield logUtils.gitInfo(
+    JSON.stringify({
+      hash: commit?.lastCommitHash ?? "",
+      message: commit?.lastCommitMessage ?? "",
+      time: commit?.lastCommitTime ?? "",
+    }),
+  );
 
   const { actions } = results;
 
@@ -283,7 +301,7 @@ export default component$(() => {
         </div>
       </div>
 
-      <div class="max-h-[90vh] flex-1 overflow-y-auto">
+      <div class="max-h-[88vh] flex-1 overflow-y-auto">
         <div class="h-full overflow-y-auto py-5 pr-3">
           {isDeploying.value ? (
             <LogStream logs={streamResponse} isDone={IsDone} />

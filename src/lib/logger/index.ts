@@ -53,7 +53,7 @@ export function scriptLogger(options: { id: string }) {
 
   return createWinstonLogger({
     level: "end",
-    levels: { ...levels, data: 3, success: 4, start: 5, end: 6 },
+    levels: { ...levels, data: 3, success: 4, gitinfo: 5, start: 6, end: 7 },
     transports: [
       createDailyRotateFileTransport({
         dirname: DIR,
