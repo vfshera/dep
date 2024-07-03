@@ -15,8 +15,8 @@ importers:
         specifier: ^1.5.7
         version: 1.5.7(@types/node@20.14.9)(undici@6.19.2)
       '@builder.io/qwik-auth':
-        specifier: 0.1.1
-        version: 0.1.1(@auth/core@0.13.0)
+        specifier: 0.2.2
+        version: 0.2.2
       '@builder.io/qwik-city':
         specifier: ^1.5.7
         version: 1.5.7(@types/node@20.14.9)(rollup@4.18.0)
@@ -177,15 +177,27 @@ packages:
       nodemailer:
         optional: true
 
+  '@auth/core@0.30.0':
+    resolution: {integrity: sha512-8AE4m/nk+4EIiVCJwxZAsJeAQuzpEC8M8768mmKVn60CGDdupKQkVhxbRlm5Qh7eNRCoFFME+0DvtaX2aXrYaA==}
+    peerDependencies:
+      '@simplewebauthn/browser': ^9.0.1
+      '@simplewebauthn/server': ^9.0.2
+      nodemailer: ^6.8.0
+    peerDependenciesMeta:
+      '@simplewebauthn/browser':
+        optional: true
+      '@simplewebauthn/server':
+        optional: true
+      nodemailer:
+        optional: true
+
   '@babel/runtime@7.24.7':
     resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
     engines: {node: '>=6.9.0'}
 
-  '@builder.io/qwik-auth@0.1.1':
-    resolution: {integrity: sha512-PM5gJwqKM3KKYqYZhwxlMe/XvaCB2Jczv+MMh8z82Z7tK9uWJ7qG3OEdVF6tNeCOolzmL7tWHypBT2+Was5/4Q==}
+  '@builder.io/qwik-auth@0.2.2':
+    resolution: {integrity: sha512-tKG26VWUMzWG929fiBYQaseQKeUzpcxVT46F4bewjEkigq8cpNgvju4KWW18cagj42902twF5XM5Ft0tGr6yig==}
     engines: {node: '>=16.8.0 <18.0.0 || >=18.11'}
-    peerDependencies:
-      '@auth/core': ^0.13.0
 
   '@builder.io/qwik-city@1.5.7':
     resolution: {integrity: sha512-2b1gr4IQu+AgL9q20RwbtTGtzzMctTMC1Aly61B7B+g5/UYYN4KHapoRaS+3NXrsDT+ahF09vfoDIxHzmuHtAA==}
@@ -970,6 +982,9 @@ packages:
 
   '@types/better-sqlite3@7.6.11':
     resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
+
+  '@types/cookie@0.6.0':
+    resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -2211,6 +2226,9 @@ packages:
   jose@4.15.7:
     resolution: {integrity: sha512-L7ioP+JAuZe8v+T5+zVI9Tx8LtU8BL7NxkyDFVMv+Qr3JW0jSoYDedLtodaXwfqMpeCyx4WXFNyu9tJt4WvC1A==}
 
+  jose@5.6.3:
+    resolution: {integrity: sha512-1Jh//hEEwMhNYPDDLwXHa2ePWgWiFNNUadVmguAAw2IJ6sj9mNxV5tGXJNqlMkJAybF6Lgw1mISDxTePP/187g==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -3389,13 +3407,27 @@ snapshots:
       preact: 10.11.3
       preact-render-to-string: 5.2.3(preact@10.11.3)
 
+  '@auth/core@0.30.0':
+    dependencies:
+      '@panva/hkdf': 1.2.0
+      '@types/cookie': 0.6.0
+      cookie: 0.6.0
+      jose: 5.6.3
+      oauth4webapi: 2.11.1
+      preact: 10.11.3
+      preact-render-to-string: 5.2.3(preact@10.11.3)
+
   '@babel/runtime@7.24.7':
     dependencies:
       regenerator-runtime: 0.14.1
 
-  '@builder.io/qwik-auth@0.1.1(@auth/core@0.13.0)':
+  '@builder.io/qwik-auth@0.2.2':
     dependencies:
-      '@auth/core': 0.13.0
+      '@auth/core': 0.30.0
+    transitivePeerDependencies:
+      - '@simplewebauthn/browser'
+      - '@simplewebauthn/server'
+      - nodemailer
 
   '@builder.io/qwik-city@1.5.7(@types/node@20.14.9)(rollup@4.18.0)':
     dependencies:
@@ -3981,6 +4013,8 @@ snapshots:
   '@types/better-sqlite3@7.6.11':
     dependencies:
       '@types/node': 20.14.9
+
+  '@types/cookie@0.6.0': {}
 
   '@types/debug@4.1.12':
     dependencies:
@@ -5404,6 +5438,8 @@ snapshots:
   jiti@1.21.6: {}
 
   jose@4.15.7: {}
+
+  jose@5.6.3: {}
 
   js-tokens@4.0.0: {}
 
