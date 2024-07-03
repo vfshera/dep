@@ -5,6 +5,41 @@ import { promisify } from "node:util";
 export const exec = promisify(sh.exec);
 
 /**
+ * Executes a shell command and returns the result.
+ *
+ * @param {string} command - The command to execute
+ *
+ */
+export async function executeCommand(command: string): Promise<
+  | {
+      ok: true;
+      stdout: string;
+      stderr: string;
+      error?: undefined;
+    }
+  | {
+      ok: false;
+      error: string;
+      stdout?: undefined;
+      stderr?: undefined;
+    }
+> {
+  try {
+    const { stdout, stderr } = await exec(command);
+
+    return { ok: true, stdout, stderr };
+  } catch (error) {
+    let message = `Failed to execute '${command}' command.`;
+
+    if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return { ok: false, error: message };
+  }
+}
+
+/**
  * Executes the "touch" command on the specified path.
  *
  * @param {string} path - the path to create a new file at
