@@ -1,6 +1,6 @@
 import path from "node:path";
 import { DEPLOY_DIR_NAME, DEPLOY_FILE_NAME } from "~/constants";
-import { exists } from "~/lib/shell";
+import { pathExists } from "~/lib/shell";
 import * as fs from "node:fs/promises";
 import YAML from "yaml";
 import fg from "fast-glob";
@@ -41,7 +41,7 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
   /**
    * Check if project exists
    */
-  let res = await exists(targetDir, baseDir);
+  let res = await pathExists(targetDir, baseDir);
 
   if (!res.ok) {
     return {
@@ -53,7 +53,7 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
   /***
    * Check if deploy directory exists
    */
-  res = await exists(DEPLOY_DIR_NAME, projectPath);
+  res = await pathExists(DEPLOY_DIR_NAME, projectPath);
 
   if (!res.ok) {
     return {
@@ -65,7 +65,10 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
   /**
    * Check if deploy file exists
    */
-  res = await exists(DEPLOY_FILE_NAME, path.join(projectPath, DEPLOY_DIR_NAME));
+  res = await pathExists(
+    DEPLOY_FILE_NAME,
+    path.join(projectPath, DEPLOY_DIR_NAME),
+  );
 
   if (!res.ok) {
     return {
@@ -78,10 +81,10 @@ export async function validateWorkflow(targetDir: string, baseDir: string) {
    * Try loading the file if error  it means the file is not valid
    */
 
-  res = await loadWorkflow(path.join(projectPath, DEPLOY_DIR_NAME));
+  const loadRes = await loadWorkflow(path.join(projectPath, DEPLOY_DIR_NAME));
 
-  if (!res.ok) {
-    return { ok: false, message: res.error };
+  if (!loadRes.ok) {
+    return { ok: false, message: loadRes.error };
   }
 
   return { ok: true, message: "" };

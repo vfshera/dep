@@ -130,24 +130,27 @@ export async function mv(from: string, to: string) {
   return exec(`mv ${from} ${to}`);
 }
 
-export async function exists(needle: string | string[], haystack: string) {
-  const res = await exec(`ls -a ${haystack}`);
+/**
+ * Checks if the specified file or directory exists in the haystack.
+ *
+ * @param {string|string[]} needle - The file or directory to look for
+ * @param {string} haystack - The directory to search in
+ * @return {Promise<{ ok: boolean, error?: string }>} - The result of the check
+ */
+export async function pathExists(needle: string | string[], haystack: string) {
+  const { ok, stdout, error } = await executeCommand(`ls -a ${haystack}`);
 
-  const dirs = res.stdout.split("\n").filter(Boolean);
-
-  if (res.stderr !== "") {
-    return { ok: false, error: res.stderr };
+  if (!ok) {
+    return { ok: false, error };
   }
 
-  if (typeof needle === "string" && !dirs.includes(needle)) {
-    return { ok: false };
-  }
+  const dirs = stdout.split("\n").filter(Boolean);
 
-  if (Array.isArray(needle) && !needle.some((dir) => dirs.includes(dir))) {
-    return { ok: false };
-  }
+  const found = Array.isArray(needle)
+    ? needle.some((dir) => dirs.includes(dir))
+    : dirs.includes(needle);
 
-  return { ok: true };
+  return { ok: found, error: found ? undefined : `Path not found: ${needle}` };
 }
 
 export default sh;
