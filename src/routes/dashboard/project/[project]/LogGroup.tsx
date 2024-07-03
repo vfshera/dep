@@ -1,3 +1,4 @@
+import type { Signal } from "@builder.io/qwik";
 import { component$, useSignal } from "@builder.io/qwik";
 import { cn, type PrettyLogsOutput } from "~/utils";
 
@@ -29,23 +30,21 @@ function sanitizeCommit(commit: string) {
 
     const { hash, message, time } = obj;
 
-    return `Commit: ${hash}\nMessage: "${message}"\nTime: ${getCommitTime(time)}`;
+    return { hash, message, timestamp: getCommitTime(time) };
   } catch (e) {
-    return "";
+    return { hash: null, message: null, timestamp: null };
   }
-
-  return "";
 }
 
 export default component$<LogGroupProps>(({ logGroup }) => {
   const open = useSignal(false);
 
   return (
-    <div onClick$={() => (open.value = !open.value)}>
+    <div onClick$={() => (open.value = !open.value)} class="relative">
       <div
         class={[
           "grid transition-[grid-template-rows] duration-300 ease-in-out",
-          open.value ? "grid-rows-[0fr]" : "grid-rows-[1fr]",
+          open.value ? "grid-rows-[0fr]" : "cursor-pointer grid-rows-[1fr]",
         ]}
       >
         <div class="overflow-hidden bg-dark-2">
@@ -59,7 +58,7 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                 {logGroup.timestamp.relative}
               </span>
             </div>
-            <div class="flex items-center gap-2 p-2">
+            <div class="flex items-center gap-2 p-2.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -104,6 +103,9 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                       "flex gap-3",
                       buildLog.level === "info" && "mt-2",
                       buildLog.level === "gitinfo" && "py-1",
+                      !open.value &&
+                        buildLog.level === "gitinfo" &&
+                        "absolute right-2 top-1/2 -translate-y-1/2",
                     )}
                   >
                     {buildLog.level !== "gitinfo" && (
@@ -119,16 +121,21 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                         buildLog.level === "error" && "text-red-500",
                         buildLog.level === "success" && "text-green-500",
                         buildLog.level === "gitinfo" &&
-                          "border border-dashed border-white/70 p-2",
+                          "border-2 border-dashed border-white/30 bg-dark-1 p-3  ",
                       )}
                     >
                       {buildLog.level === "start" && "🚀 "}
                       {buildLog.level === "success" && "✅ "}
-                      {buildLog.level === "info"
-                        ? `[${buildLog.message}]`
-                        : buildLog.level === "gitinfo"
-                          ? sanitizeCommit(buildLog.message)
-                          : buildLog.message}
+                      {buildLog.level === "info" ? (
+                        `[${buildLog.message}]`
+                      ) : buildLog.level === "gitinfo" ? (
+                        <Commit
+                          {...sanitizeCommit(buildLog.message)}
+                          open={open}
+                        />
+                      ) : (
+                        buildLog.message
+                      )}
                     </pre>
                   </li>
                 ))}
@@ -137,5 +144,20 @@ export default component$<LogGroupProps>(({ logGroup }) => {
         </div>
       </div>
     </div>
+  );
+});
+
+export const Commit = component$<{
+  hash: string | null;
+  message: string | null;
+  timestamp: string | null;
+  open: Signal<boolean>;
+}>(({ hash, message, timestamp, open }) => {
+  return (
+    <span class="grid grid-cols-1">
+      <span>Commit: {hash}</span>
+      <span>Message: "{message}"</span>
+      {open.value && <span>Time: {timestamp}</span>}
+    </span>
   );
 });
