@@ -5,6 +5,38 @@ type LogGroupProps = {
   logGroup: Awaited<PrettyLogsOutput>[number];
 };
 
+function getCommitTime(timeString: string) {
+  try {
+    const date = new Date(timeString);
+
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
+    }
+
+    return date.toLocaleString();
+  } catch (error) {
+    return timeString;
+  }
+}
+
+function sanitizeCommit(commit: string) {
+  try {
+    const obj = JSON.parse(commit) as {
+      hash: string;
+      message: string;
+      time: string;
+    };
+
+    const { hash, message, time } = obj;
+
+    return `Commit: ${hash}\nMessage: "${message}"\nTime: ${getCommitTime(time)}`;
+  } catch (e) {
+    return "";
+  }
+
+  return "";
+}
+
 export default component$<LogGroupProps>(({ logGroup }) => {
   const open = useSignal(false);
 
@@ -18,11 +50,15 @@ export default component$<LogGroupProps>(({ logGroup }) => {
       >
         <div class="overflow-hidden bg-dark-2">
           <div>
-            <span
-              class={["inline-block bg-dark-3 px-2 py-1.5 text-sm text-white"]}
-            >
-              {logGroup.timestamp.relative}
-            </span>
+            <div class="flex items-center gap-3">
+              <span
+                class={[
+                  "inline-block bg-dark-3 px-2 py-1.5 text-sm text-white",
+                ]}
+              >
+                {logGroup.timestamp.relative}
+              </span>
+            </div>
             <div class="flex items-center gap-2 p-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -67,11 +103,14 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                     class={cn(
                       "flex gap-3",
                       buildLog.level === "info" && "mt-2",
+                      buildLog.level === "gitinfo" && "py-1",
                     )}
                   >
-                    <span class="shrink-0 text-sm text-white/90">
-                      {buildLog.timestamp.raw}
-                    </span>
+                    {buildLog.level !== "gitinfo" && (
+                      <span class="shrink-0 text-sm text-white/90">
+                        {buildLog.timestamp.raw}
+                      </span>
+                    )}
                     <pre
                       class={cn(
                         "block cursor-pointer whitespace-break-spaces  break-words rounded  px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
@@ -79,13 +118,17 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                           "font-medium text-blue-400",
                         buildLog.level === "error" && "text-red-500",
                         buildLog.level === "success" && "text-green-500",
+                        buildLog.level === "gitinfo" &&
+                          "border border-dashed border-white/70 p-2",
                       )}
                     >
                       {buildLog.level === "start" && "🚀 "}
                       {buildLog.level === "success" && "✅ "}
                       {buildLog.level === "info"
                         ? `[${buildLog.message}]`
-                        : buildLog.message}
+                        : buildLog.level === "gitinfo"
+                          ? sanitizeCommit(buildLog.message)
+                          : buildLog.message}
                     </pre>
                   </li>
                 ))}
