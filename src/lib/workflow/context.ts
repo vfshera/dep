@@ -47,3 +47,24 @@ export function redactEnvVariables(
 
   return data;
 }
+
+export function detectUndefinedVariables(
+  command: string,
+  envConfig: DotenvParseOutput,
+) {
+  const undefinedVariables: string[] = [];
+
+  const variableRegex = /\$([A-Za-z0-9_]+)/g;
+
+  let match;
+
+  while ((match = variableRegex.exec(command))) {
+    const variableName = match[1];
+
+    if (!(variableName in envConfig)) {
+      undefinedVariables.push(variableName);
+    }
+  }
+
+  return undefinedVariables.length ? undefinedVariables : null;
+}

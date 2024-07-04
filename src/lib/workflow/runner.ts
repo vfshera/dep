@@ -13,7 +13,11 @@ import {
 import path from "node:path";
 import * as logUtils from "~/lib/logger/utils";
 import sh from "../shell";
-import { loadEnv, redactEnvVariables } from "./context";
+import {
+  detectUndefinedVariables,
+  loadEnv,
+  redactEnvVariables,
+} from "./context";
 import type { DotenvParseOutput } from "dotenv";
 
 export async function* runner(
@@ -28,7 +32,7 @@ export async function* runner(
       value: validation.message!,
     };
 
-    throw Error(validation.message);
+    return;
   }
 
   const PROJECT_WD = path.join(BASE_DIR, dir, DEPLOY_DIR_NAME);
@@ -41,7 +45,7 @@ export async function* runner(
       value: results.error,
     };
 
-    throw Error(results.error);
+    return;
   }
 
   const commit = await getLastCommitInfo(path.join(BASE_DIR, dir));
@@ -109,6 +113,18 @@ async function* runCommand({
     }, [] as string[]);
 
     yield logUtils.info("ENV " + envList.join("; "));
+  }
+
+  for (const cmd of command.split("\n")) {
+    const undefinedVariables = detectUndefinedVariables(cmd, depEnv || {});
+
+    if (undefinedVariables) {
+      const message = `Command \`${cmd}\` contains undefined variable(s): ${undefinedVariables.map((v) => `"$${v}"`).join(", ")}.`;
+
+      yield logUtils.error(message);
+
+      return;
+    }
   }
 
   const childProcess = sh.spawn(com, cmds, {
