@@ -68,8 +68,6 @@ export const useCreateProject = routeAction$(
       return { success: false, message: "Failed to create project!" };
     }
 
-    toast.success("Project created successfully");
-
     return { success: true, message: "Project created successfully" };
   },
   zod$({
