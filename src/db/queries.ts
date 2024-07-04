@@ -22,6 +22,14 @@ export async function getProjectBySlug(slug: string) {
   });
 }
 
+export async function updateProjectName(slug: string, name: string) {
+  return await db
+    .update(projects)
+    .set({ name })
+    .where(eq(projects.slug, slug))
+    .returning({ updatedName: projects.name });
+}
+
 export async function checkIfProjectExists(slug: string, dir: string) {
   return db.query.projects.findFirst({
     where: (proj) => or(eq(proj.slug, slug), eq(proj.workingDir, dir)),

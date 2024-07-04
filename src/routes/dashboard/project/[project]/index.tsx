@@ -7,11 +7,15 @@ import {
   type DocumentHead,
   routeLoader$,
   server$,
+  Form,
+  routeAction$,
+  zod$,
+  z,
 } from "@builder.io/qwik-city";
 
 import { scriptLogger } from "~/lib/logger";
 import * as logUtils from "~/lib/logger/utils";
-import { getProjectBySlug } from "~/db/queries";
+import { getProjectBySlug, updateProjectName } from "~/db/queries";
 import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
 import {
   getLastCommitInfo,
@@ -23,6 +27,7 @@ import path from "node:path";
 import sh from "~/lib/shell";
 import LogStream from "./LogStream";
 import LogGroup from "./LogGroup";
+import Input from "~/components/ui/form/Input";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
@@ -180,8 +185,37 @@ export const runActions = server$(async function* (
   yield logUtils.end();
 });
 
+export const useRenameProject = routeAction$(
+  async (data, ctx) => {
+    const project = await getProjectBySlug(data.slug);
+
+    if (!project) {
+      return { success: false, message: "Project not found" };
+    }
+
+    const [res] = await updateProjectName(data.slug, data.name);
+
+    if (!res) {
+      return { success: false, message: "Failed to rename project" };
+    }
+
+    return {
+      success: true,
+      message: `Project ${data.name} renamed to ${res.updatedName} successfully!`,
+    };
+  },
+  zod$({
+    name: z.string().min(5, "Name must be at least 5 characters long"),
+    slug: z.string(),
+  }),
+);
+
 export default component$(() => {
+  const renameAction = useRenameProject();
+
   const streamResponse = useSignal<ScriptYield[]>([]);
+
+  const renameModalRef = useSignal<HTMLDialogElement>();
 
   const project = useProject();
 
@@ -252,7 +286,28 @@ export default component$(() => {
     <div class="flex flex-col gap-5 ">
       <div class="flex justify-between">
         <div>
-          <h2 class="text-2xl capitalize">{project.value.name}</h2>
+          <div class="flex items-center gap-2">
+            <h2 class="text-2xl capitalize">{project.value.name}</h2>
+            <button
+              type="button"
+              onClick$={() => renameModalRef.value?.showModal()}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                />
+              </svg>
+            </button>
+          </div>
           <span class="inline-block rounded-full border border-current px-2 py-0.5 text-xs text-light-2">
             {project.value.slug}
           </span>
@@ -320,6 +375,62 @@ export default component$(() => {
           )}
         </div>
       </div>
+
+      <dialog ref={renameModalRef} class="bg-transparent backdrop:bg-black/70">
+        <div class="  rounded bg-white p-8">
+          <Form
+            action={renameAction}
+            onSubmitCompleted$={$(() => {
+              if (renameAction.value?.success) {
+                toast.success(
+                  renameAction.value.message || "Project renamed successfully",
+                );
+
+                renameModalRef.value?.close();
+
+                return;
+              } else {
+                toast.error(
+                  renameAction.value?.message || "Failed to rename project",
+                );
+              }
+            })}
+            class="space-y-5"
+          >
+            <Input
+              type="text"
+              placeholder="New Name"
+              name="name"
+              value={project.value.name}
+            />
+            <input
+              class="hidden"
+              type="text"
+              name="slug"
+              value={project.value.slug}
+            />
+            <div class="grid grid-cols-2 gap-5 ">
+              <button
+                type="submit"
+                disabled={renameAction.isRunning}
+                class={[
+                  "rounded-xl bg-black py-2 pl-4 pr-5 text-center text-white hover:shadow-lg",
+                  renameAction.isRunning && "animate-pulse cursor-not-allowed",
+                ]}
+              >
+                Rename Project
+              </button>
+              <button
+                type="button"
+                onClick$={() => renameModalRef.value?.close()}
+                class="rounded-xl border border-black bg-white py-2 pl-4 pr-5 text-black shadow hover:shadow-lg"
+              >
+                Close
+              </button>
+            </div>
+          </Form>
+        </div>
+      </dialog>
     </div>
   );
 });
