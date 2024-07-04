@@ -1,5 +1,4 @@
 import { twMerge, type ClassNameValue } from "tailwind-merge";
-import { type LogOutput } from "~/types";
 
 export function cn(...classes: ClassNameValue[]) {
   return twMerge(classes);
@@ -55,66 +54,4 @@ export function relativeTime(date: Date | number, from?: Date): string {
   const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
   return rtf.format(Math.floor(deltaSeconds / divisor), units[unitIndex]);
-}
-
-/**
- * Splits the log array into segments based on "start" and "end" levels.
- *
- * @param {LogOutput[]} array - the array of LogOutput objects to be split
- * @return {LogOutput[][]} an array of arrays containing segmented LogOutput objects
- */
-export function splitLogByLevels(array: LogOutput[]) {
-  const segments: LogOutput[][] = [];
-
-  let segment: LogOutput[] = [];
-
-  for (const obj of array) {
-    if (obj.level === "start") {
-      segment = [obj];
-    } else if (obj.level === "end") {
-      segment.push(obj);
-      segments.push(segment);
-      segment = [];
-    } else {
-      segment.push(obj);
-    }
-  }
-
-  return segments;
-}
-
-export type PrettyLogsOutput = Promise<ReturnType<typeof prettyLogs>>;
-
-/**
- * Generate pretty logs with timestamps and sort them in descending order based on timestamp.
- *
- * @param {LogOutput[]} logs - an array of log outputs
- * @return {object[]} an array of formatted log objects sorted by timestamp in descending order
- */
-export function prettyLogs(logs: LogOutput[]) {
-  const splitLogs = splitLogByLevels(logs);
-
-  return splitLogs
-    .map((log) => {
-      const time = log[log.length - 1].timestamp;
-
-      return {
-        timestamp: {
-          raw: time,
-          relative: relativeTime(new Date(time)),
-        },
-        items: log.map((logItem) => ({
-          ...logItem,
-          timestamp: {
-            raw: logItem.timestamp,
-            relative: relativeTime(new Date(logItem.timestamp)),
-          },
-        })),
-      };
-    })
-    .sort(
-      (a, z) =>
-        new Date(z.timestamp.raw).getTime() -
-        new Date(a.timestamp.raw).getTime(),
-    );
 }

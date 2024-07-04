@@ -1,7 +1,7 @@
-import type { ScriptYield } from "~/types";
+import type { ScriptYield, LogOutput } from "~/types";
 import { scriptLogger } from ".";
 import { type QueryOptions } from "winston";
-import { prettyLogs } from "~/utils";
+import { relativeTime } from "~/utils";
 
 export async function getLogs(
   id: string,
@@ -58,4 +58,66 @@ export function end(): ScriptYield {
 
 export function start(msg: string): ScriptYield {
   return { type: "START", value: msg };
+}
+
+/**
+ * Splits the log array into segments based on "start" and "end" levels.
+ *
+ * @param {LogOutput[]} array - the array of LogOutput objects to be split
+ * @return {LogOutput[][]} an array of arrays containing segmented LogOutput objects
+ */
+export function splitLogByLevels(array: LogOutput[]) {
+  const segments: LogOutput[][] = [];
+
+  let segment: LogOutput[] = [];
+
+  for (const obj of array) {
+    if (obj.level === "start") {
+      segment = [obj];
+    } else if (obj.level === "end") {
+      segment.push(obj);
+      segments.push(segment);
+      segment = [];
+    } else {
+      segment.push(obj);
+    }
+  }
+
+  return segments;
+}
+
+export type PrettyLogsOutput = Promise<ReturnType<typeof prettyLogs>>;
+
+/**
+ * Generate pretty logs with timestamps and sort them in descending order based on timestamp.
+ *
+ * @param {LogOutput[]} logs - an array of log outputs
+ * @return {object[]} an array of formatted log objects sorted by timestamp in descending order
+ */
+export function prettyLogs(logs: LogOutput[]) {
+  const splitLogs = splitLogByLevels(logs);
+
+  return splitLogs
+    .map((log) => {
+      const time = log[log.length - 1].timestamp;
+
+      return {
+        timestamp: {
+          raw: time,
+          relative: relativeTime(new Date(time)),
+        },
+        items: log.map((logItem) => ({
+          ...logItem,
+          timestamp: {
+            raw: logItem.timestamp,
+            relative: relativeTime(new Date(logItem.timestamp)),
+          },
+        })),
+      };
+    })
+    .sort(
+      (a, z) =>
+        new Date(z.timestamp.raw).getTime() -
+        new Date(a.timestamp.raw).getTime(),
+    );
 }

@@ -2,7 +2,6 @@ import { $, component$, useComputed$, useSignal } from "@builder.io/qwik";
 import { toast } from "qwik-sonner";
 
 import type { ScriptYield } from "~/types";
-import type { PrettyLogsOutput } from "~/utils";
 import {
   type DocumentHead,
   routeLoader$,
@@ -28,6 +27,7 @@ import sh from "~/lib/shell";
 import LogStream from "./LogStream";
 import LogGroup from "./LogGroup";
 import Input from "~/components/ui/form/Input";
+import type { PrettyLogsOutput } from "~/lib/logger/utils";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
