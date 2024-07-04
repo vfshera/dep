@@ -28,6 +28,44 @@ export async function getLogs(
   });
 }
 
+export function logDeploymentInfo(id: string, logs: ScriptYield[]) {
+  const logger = scriptLogger({
+    id: id,
+  });
+
+  logs.forEach((i) => {
+    switch (i.type) {
+      case "GITINFO":
+        logger.log({ level: "gitinfo", message: i.value });
+        break;
+      case "INFO":
+        logger.info(i.value);
+        break;
+      case "DATA":
+        logger.data(i.value);
+        break;
+      case "ERROR":
+        logger.error(i.value);
+        break;
+      case "SUCCESS":
+        logger.log({ level: "success", message: i.value });
+        break;
+      case "WARN":
+        logger.warn(i.value);
+        break;
+      case "START":
+        logger.log({ level: "start", message: i.value });
+        break;
+      case "END":
+        logger.log({ level: "end", message: i.value });
+        break;
+
+      default:
+        console.log("Unknown log type " + i.type);
+    }
+  });
+}
+
 export function gitInfo(msg: string): ScriptYield {
   return { type: "GITINFO", value: msg };
 }

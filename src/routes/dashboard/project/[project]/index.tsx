@@ -12,22 +12,17 @@ import {
   z,
 } from "@builder.io/qwik-city";
 
-import { scriptLogger } from "~/lib/logger";
-import * as logUtils from "~/lib/logger/utils";
 import { getProjectBySlug, updateProjectName } from "~/db/queries";
-import { DEPLOY_DIR_NAME, WORKING_DIR_KEY } from "~/constants";
-import {
-  getLastCommitInfo,
-  isRunnableJob,
-  loadWorkflow,
-  validateWorkflow,
-} from "~/lib/workflow";
-import path from "node:path";
-import sh from "~/lib/shell";
+import { WORKING_DIR_KEY } from "~/constants";
 import LogStream from "./LogStream";
 import LogGroup from "./LogGroup";
 import Input from "~/components/ui/form/Input";
-import type { PrettyLogsOutput } from "~/lib/logger/utils";
+import {
+  logDeploymentInfo,
+  getLogs,
+  type PrettyLogsOutput,
+} from "~/lib/logger/utils";
+import { runner } from "~/lib/workflow/runner";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
@@ -45,47 +40,11 @@ export const useLogs = routeLoader$(
 
     if (!p) return [];
 
-    return logUtils.getLogs(p.slug);
+    return getLogs(p.slug);
   },
 );
 
-export const logDeployment = server$(function (
-  id: string,
-  logs: ScriptYield[],
-) {
-  const logger = scriptLogger({
-    id: id,
-  });
-
-  logs.forEach((i) => {
-    switch (i.type) {
-      case "GITINFO":
-        logger.log({ level: "gitinfo", message: i.value });
-        break;
-      case "INFO":
-        logger.info(i.value);
-        break;
-      case "DATA":
-        logger.data(i.value);
-        break;
-      case "ERROR":
-        logger.error(i.value);
-        break;
-      case "WARN":
-        logger.warn(i.value);
-        break;
-      case "START":
-        logger.log({ level: "start", message: i.value });
-        break;
-      case "END":
-        logger.log({ level: "end", message: i.value });
-        break;
-
-      default:
-        console.log("Unknown log type " + i.type);
-    }
-  });
-});
+export const logDeployment = server$(logDeploymentInfo);
 
 export const runActions = server$(async function* (
   dir: string,
@@ -98,91 +57,7 @@ export const runActions = server$(async function* (
     );
   }
 
-  const validation = await validateWorkflow(dir, BASE_DIR);
-
-  if (!validation.ok) {
-    yield {
-      type: "ERROR",
-      value: validation.message!,
-    };
-
-    throw Error(validation.message);
-  }
-
-  const PROJECT_WD = path.join(BASE_DIR, dir, DEPLOY_DIR_NAME);
-
-  const results = await loadWorkflow(PROJECT_WD);
-
-  if (!results.ok) {
-    yield {
-      type: "ERROR",
-      value: results.error,
-    };
-
-    throw Error(results.error);
-  }
-
-  const commit = await getLastCommitInfo(path.join(BASE_DIR, dir));
-
-  yield logUtils.gitInfo(
-    JSON.stringify({
-      hash: commit?.lastCommitHash ?? "",
-      message: commit?.lastCommitMessage ?? "",
-      time: commit?.lastCommitTime ?? "",
-    }),
-  );
-
-  const { actions } = results;
-
-  yield logUtils.start(actions.name);
-
-  for (const key in actions.jobs) {
-    const job = actions.jobs[key as keyof (typeof actions)["jobs"]];
-
-    yield logUtils.info(job.name);
-
-    if (isRunnableJob(job)) {
-      const [com, ...cmds] = job.run.split(" ");
-
-      const jobProcess = sh.spawn(com, cmds, { cwd: PROJECT_WD, shell: true });
-
-      for await (const data of jobProcess.stdout) {
-        yield logUtils.data((data.toString() as string).trim());
-      }
-
-      for await (const data of jobProcess.stderr) {
-        yield logUtils.error((data.toString() as string).trim());
-      }
-
-      jobProcess.on("exit", (code) => {
-        console.log(`[${key}]: ${job.name} exited with code ${code}`);
-      });
-    } else {
-      for (const step of job.steps) {
-        yield logUtils.info(step.name);
-        const [com, ...cmds] = step.run.split(" ");
-
-        const stepProcess = sh.spawn(com, cmds, {
-          cwd: PROJECT_WD,
-          shell: true,
-        });
-
-        for await (const data of stepProcess.stdout) {
-          yield logUtils.data((data.toString() as string).trim());
-        }
-
-        for await (const data of stepProcess.stderr) {
-          yield logUtils.error((data.toString() as string).trim());
-        }
-
-        stepProcess.on("exit", (code) => {
-          console.log(`[${step}]: ${job.name} exited with code ${code}`);
-        });
-      }
-    }
-  }
-
-  yield logUtils.end();
+  yield* runner(dir, BASE_DIR);
 });
 
 export const useRenameProject = routeAction$(
@@ -220,7 +95,7 @@ export default component$(() => {
   const project = useProject();
 
   if (!project.value) {
-    return <div>Project not found</div>;
+    return <NotFound />;
   }
 
   const logs = useLogs();
@@ -288,9 +163,12 @@ export default component$(() => {
         <div>
           <div class="flex items-center gap-2">
             <h2 class="text-2xl capitalize">{project.value.name}</h2>
+            <span class="mx-2 h-full w-px shrink-0 bg-white/70 ">&nbsp;</span>
             <button
               type="button"
               onClick$={() => renameModalRef.value?.showModal()}
+              class="text-white/90 transition-colors duration-300 hover:text-white"
+              title="Rename Project"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -431,6 +309,36 @@ export default component$(() => {
           </Form>
         </div>
       </dialog>
+    </div>
+  );
+});
+
+export const NotFound = component$(() => {
+  return (
+    <div class="space-y-5">
+      <div class="flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="size-7 text-red-600"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+          <line x1="12" x2="12" y1="8" y2="12" />
+          <line x1="12" x2="12.01" y1="16" y2="16" />
+        </svg>
+        <h2 class="text-2xl capitalize">Project not found!</h2>
+      </div>
+
+      <div>
+        <a href="/dashboard" class="block w-max rounded bg-dark-3 px-5 py-2 ">
+          Go to Dashboard
+        </a>
+      </div>
     </div>
   );
 });
