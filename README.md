@@ -45,6 +45,14 @@ jobs:
     run: pnpm run build
 ```
 
-## Planned Features
+## Environment Variable Support
 
-**Environment Variable Support:** Load variables into scripts by declaring a .env.dep file. This will allow you to manage environment-specific configurations easily.
+Load variables into scripts by declaring a .env.dep file. The output will NOT be redacted in logs and ui if the env key starts with `PUBLIC_`
+
+```yaml
+name: Demo
+jobs:
+  list:
+    name: Echo
+    run: echo $S3_BUCKET
+```
