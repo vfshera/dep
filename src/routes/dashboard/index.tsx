@@ -15,9 +15,12 @@ import { WORKING_DIR_KEY } from "~/constants";
 import { checkIfProjectExists, createProject, getProjects } from "~/db/queries";
 import { listProjects, validateWorkflow } from "~/lib/workflow";
 import { toast } from "qwik-sonner";
+import { resolvePath } from "~/utils/paths";
 
 export const useProjects = routeLoader$(async (ctx) => {
-  const list = await listProjects(ctx.env.get(WORKING_DIR_KEY) as string);
+  const list = await listProjects(
+    resolvePath(ctx.env.get(WORKING_DIR_KEY) ?? "") as string,
+  );
 
   const projects = await getProjects();
 
@@ -26,7 +29,7 @@ export const useProjects = routeLoader$(async (ctx) => {
 
 export const useCreateProject = routeAction$(
   async (data, req) => {
-    const BASE_DIR = req.env.get(WORKING_DIR_KEY);
+    const BASE_DIR = resolvePath(req.env.get(WORKING_DIR_KEY) ?? "");
 
     if (!BASE_DIR || BASE_DIR === "") {
       return {

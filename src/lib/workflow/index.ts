@@ -136,9 +136,7 @@ export async function listProjects(projectsDir: string) {
 
     const projctWithRepo = await Promise.all(
       validFiles.map(async (pf) => {
-        const projectPath = `${projectsDir}/${pf}`;
-
-        const gitInfo = await getGitRemoteUrl(projectPath);
+        const gitInfo = await getGitRemoteUrl(path.join(projectsDir, pf));
 
         return {
           name: pf,

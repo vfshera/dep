@@ -23,6 +23,7 @@ import {
   type PrettyLogsOutput,
 } from "~/lib/logger/utils";
 import { runner } from "~/lib/workflow/runner";
+import { resolvePath } from "~/utils/paths";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
@@ -49,7 +50,7 @@ export const logDeployment = server$(logDeploymentInfo);
 export const runActions = server$(async function* (
   dir: string,
 ): AsyncGenerator<ScriptYield, void, unknown> {
-  const BASE_DIR = this.env.get(WORKING_DIR_KEY);
+  const BASE_DIR = resolvePath(this.env.get(WORKING_DIR_KEY) ?? "");
 
   if (!BASE_DIR) {
     throw Error(
