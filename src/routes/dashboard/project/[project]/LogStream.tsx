@@ -25,7 +25,7 @@ export default component$<LogStreamProps>(({ logs, isDone }) => {
             >
               <pre
                 class={cn(
-                  "block cursor-pointer  whitespace-break-spaces break-words rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
+                  "block cursor-pointer whitespace-break-spaces break-words rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
                   s.type === "INFO" && "font-medium text-blue-400",
                   s.type === "ERROR" && "text-red-500",
                   s.type === "SUCCESS" && "text-green-500",

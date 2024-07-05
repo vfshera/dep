@@ -1,6 +1,7 @@
 import type { Signal } from "@builder.io/qwik";
 import { component$, useSignal } from "@builder.io/qwik";
-import { cn, type PrettyLogsOutput } from "~/utils";
+import type { PrettyLogsOutput } from "~/lib/logger/utils";
+import { cn } from "~/utils";
 
 type LogGroupProps = {
   logGroup: Awaited<PrettyLogsOutput>[number];
@@ -88,7 +89,7 @@ export default component$<LogGroupProps>(({ logGroup }) => {
         <div class="overflow-hidden">
           <div
             key={`${logGroup.timestamp.raw}`}
-            class=" rounded  bg-dark-2 p-1 pt-2.5 first:pt-0"
+            class="rounded bg-dark-2 p-1 pt-2.5 first:pt-0"
           >
             <span class="inline-block bg-dark-3 p-2 text-sm text-white">
               Run: {logGroup.timestamp.relative}
@@ -115,13 +116,13 @@ export default component$<LogGroupProps>(({ logGroup }) => {
                     )}
                     <pre
                       class={cn(
-                        "block cursor-pointer whitespace-break-spaces  break-words rounded  px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
+                        "block cursor-pointer whitespace-break-spaces break-words rounded px-2 py-0.5 text-sm text-white hover:bg-white/5 hover:transition-colors",
                         buildLog.level === "info" &&
                           "font-medium text-blue-400",
                         buildLog.level === "error" && "text-red-500",
                         buildLog.level === "success" && "text-green-500",
                         buildLog.level === "gitinfo" &&
-                          "border-2 border-dashed border-white/30 bg-dark-1 p-3  ",
+                          "border-2 border-dashed border-white/30 bg-dark-1 p-3",
                       )}
                     >
                       {buildLog.level === "start" && "🚀 "}

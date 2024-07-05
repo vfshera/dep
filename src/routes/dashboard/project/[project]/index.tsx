@@ -82,7 +82,7 @@ export const runActions = server$(async function* (
 });
 
 export const useRenameProject = routeAction$(
-  async (data, ctx) => {
+  async (data) => {
     const project = await getProjectBySlug(data.slug);
 
     if (!project) {
@@ -91,6 +91,7 @@ export const useRenameProject = routeAction$(
 
     const [res] = await updateProjectName(data.slug, data.name);
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!res) {
       return { success: false, message: "Failed to rename project" };
     }
@@ -124,6 +125,8 @@ export default component$(() => {
   }
 
   const initialLogs = useLogs();
+
+  console.log(initialLogs.value);
 
   const logs = useSignal(initialLogs.value);
 
@@ -190,12 +193,12 @@ export default component$(() => {
   });
 
   return (
-    <div class="flex flex-col gap-5 ">
+    <div class="flex flex-col gap-5">
       <div class="flex justify-between">
         <div>
           <div class="flex items-center gap-2">
             <h2 class="text-2xl capitalize">{project.value.name}</h2>
-            <span class="mx-2 h-full w-px shrink-0 bg-white/70 ">&nbsp;</span>
+            <span class="mx-2 h-full w-px shrink-0 bg-white/70">&nbsp;</span>
             <button
               type="button"
               onClick$={() => renameModalRef.value?.showModal()}
@@ -287,7 +290,7 @@ export default component$(() => {
       </div>
 
       <dialog ref={renameModalRef} class="bg-transparent backdrop:bg-black/70">
-        <div class="  rounded bg-white p-8">
+        <div class="rounded bg-white p-8">
           <Form
             action={renameAction}
             onSubmitCompleted$={$(() => {
@@ -319,7 +322,7 @@ export default component$(() => {
               name="slug"
               value={project.value.slug}
             />
-            <div class="grid grid-cols-2 gap-5 ">
+            <div class="grid grid-cols-2 gap-5">
               <button
                 type="submit"
                 disabled={renameAction.isRunning}
@@ -367,7 +370,7 @@ export const NotFound = component$(() => {
       </div>
 
       <div>
-        <a href="/dashboard" class="block w-max rounded bg-dark-3 px-5 py-2 ">
+        <a href="/dashboard" class="block w-max rounded bg-dark-3 px-5 py-2">
           Go to Dashboard
         </a>
       </div>

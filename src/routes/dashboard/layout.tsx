@@ -28,7 +28,7 @@ export default component$(() => {
   return (
     <main
       class={[
-        "flex h-screen flex-col overflow-hidden  bg-dark-1 text-white",
+        "flex h-screen flex-col overflow-hidden bg-dark-1 text-white",
         appStore.sidebarCollapsed
           ? "[--sidebar-width:70px]"
           : "[--sidebar-width:300px]",

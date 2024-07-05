@@ -115,7 +115,7 @@ export default component$(() => {
   });
 
   return (
-    <div class="space-y-5 ">
+    <div class="space-y-5">
       <div class="flex items-center justify-between">
         <h1 class="text-xl font-semibold">Projects</h1>
 
@@ -199,7 +199,7 @@ export default component$(() => {
 
             <select
               name="dir"
-              class="w-full rounded border border-black bg-transparent p-2.5 capitalize text-gray-700  accent-black "
+              class="w-full rounded border border-black bg-transparent p-2.5 capitalize text-gray-700 accent-black"
               onChange$={(e, target) => {
                 const p = autocomplete.value.find(
                   (p) => p.slug === target.value,
@@ -240,7 +240,7 @@ export default component$(() => {
                 </div>
               )}
 
-            <div class="grid grid-cols-2 gap-5 ">
+            <div class="grid grid-cols-2 gap-5">
               <button
                 type="submit"
                 disabled={createAction.isRunning}

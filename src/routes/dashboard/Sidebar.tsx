@@ -10,10 +10,10 @@ export default component$(() => {
   const appStore = useAppContext();
 
   return (
-    <aside class=" relative">
+    <aside class="relative">
       <div
         class={[
-          "absolute right-0 ",
+          "absolute right-0",
           appStore.sidebarCollapsed ? "top-0 translate-x-1/2" : "top-5",
         ]}
       >
@@ -69,7 +69,7 @@ export default component$(() => {
       </a>
 
       <div class="space-y-5 *:p-5">
-        <div class="flex flex-col gap-1  border-y border-dark-3 text-light-2">
+        <div class="flex flex-col gap-1 border-y border-dark-3 text-light-2">
           {appStore.sidebarCollapsed ? (
             <div
               class="cursor-pointer pb-5"
