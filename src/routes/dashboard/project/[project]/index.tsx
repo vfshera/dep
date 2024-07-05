@@ -24,6 +24,7 @@ import {
 } from "~/lib/logger/utils";
 import { runner } from "~/lib/workflow/runner";
 import { resolvePath } from "~/utils/paths";
+import { pathExists } from "~/lib/shell";
 
 export const useProject = routeLoader$(async ({ params, status }) => {
   const project = await getProjectBySlug(params.project);
@@ -47,18 +48,40 @@ export const useLogs = routeLoader$(
 
 export const logDeployment = server$(logDeploymentInfo);
 
+type ActionError = {
+  type: "SERVER_ERROR";
+  value: string;
+};
+
 export const runActions = server$(async function* (
   dir: string,
-): AsyncGenerator<ScriptYield, void, unknown> {
-  const BASE_DIR = resolvePath(this.env.get(WORKING_DIR_KEY) ?? "");
+): AsyncGenerator<ScriptYield | ActionError, void, unknown> {
+  const BASE_DIR = this.env.get(WORKING_DIR_KEY);
 
   if (!BASE_DIR) {
-    throw Error(
-      `Base directory not found! Please set ${WORKING_DIR_KEY} in the .env file!`,
-    );
+    const message = `Base directory not found! Please set ${WORKING_DIR_KEY} in the .env file!`;
+
+    console.log(message);
+
+    yield { type: "SERVER_ERROR", value: message };
+
+    return;
   }
 
-  yield* runner(dir, BASE_DIR);
+  const WORKING_DIR = resolvePath(BASE_DIR);
+
+  const res = await pathExists(dir, WORKING_DIR);
+
+  if (!res.ok) {
+    const message = `Project directory not found!`;
+
+    console.log(message);
+    yield { type: "SERVER_ERROR", value: message };
+
+    return;
+  }
+
+  yield* runner(dir, WORKING_DIR);
 });
 
 export const useRenameProject = routeAction$(
@@ -118,44 +141,49 @@ export default component$(() => {
   const deploy = $(async () => {
     isDeploying.value = true;
     streamResponse.value = [];
+
     try {
       const res = await runActions(project.value.workingDir);
 
-      for await (const i of res) {
-        if (i.type === "START") {
-          toast("🚀 " + i.value);
+      for await (const data of res) {
+        if (data.type === "SERVER_ERROR") {
+          toast.error(data.value);
+
+          break;
         }
 
-        if (i.type === "SUCCESS") {
-          toast.success(i.value);
+        if (data.type === "START") {
+          toast("🚀 " + data.value);
         }
 
-        if (i.type === "INFO") {
-          toast.info(i.value);
+        if (data.type === "SUCCESS") {
+          toast.success(data.value);
         }
 
-        if (i.type === "ERROR") {
-          toast.error(i.value);
+        if (data.type === "INFO") {
+          toast.info(data.value);
         }
 
-        streamResponse.value = [...streamResponse.value, i];
-        await logDeployment(project.value.slug, [i]);
+        if (data.type === "ERROR") {
+          toast.error(data.value);
+        }
+
+        streamResponse.value = [...streamResponse.value, data];
+        await logDeployment(project.value.slug, [data]);
       }
     } catch (err) {
-      console.log("Deploy Error");
+      let message = "Something went wrong!";
 
       if (err instanceof Error) {
-        console.log(err.message);
+        message = err.message;
       }
 
-      return;
+      console.log(message);
+
+      toast.error(message);
     }
 
     isDeploying.value = false;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (window) {
-      window.location.reload();
-    }
   });
 
   return (
