@@ -48,6 +48,10 @@ export async function* runner(
     return;
   }
 
+  const { actions } = results;
+
+  yield logUtils.start(actions.name);
+
   const commit = await getLastCommitInfo(path.join(BASE_DIR, dir));
 
   yield logUtils.gitInfo(
@@ -57,10 +61,6 @@ export async function* runner(
       time: commit?.lastCommitTime ?? "",
     }),
   );
-
-  const { actions } = results;
-
-  yield logUtils.start(actions.name);
 
   const env = await loadEnv(PROJECT_WD);
 
