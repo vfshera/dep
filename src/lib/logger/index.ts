@@ -36,8 +36,7 @@ export function createWinstonLogger(options: winston.LoggerOptions = {}) {
 export function createDailyRotateFileTransport(
   options: DailyRotateFile.DailyRotateFileTransportOptions = {},
 ) {
-  return new DailyRotateFile({
-    // @ts-ignore
+  const opt = {
     filename: "%DATE%.log",
     datePattern: "YYYY-MM-DD-HH",
     zippedArchive: true,
@@ -45,7 +44,9 @@ export function createDailyRotateFileTransport(
     maxFiles: "14d",
     dirname: "logs",
     ...options,
-  });
+  } as DailyRotateFile.DailyRotateFileTransportOptions;
+
+  return new DailyRotateFile(opt);
 }
 
 export function scriptLogger(options: { id: string }) {
