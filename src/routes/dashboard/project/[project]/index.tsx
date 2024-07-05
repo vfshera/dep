@@ -126,8 +126,6 @@ export default component$(() => {
 
   const initialLogs = useLogs();
 
-  console.log(initialLogs.value);
-
   const logs = useSignal(initialLogs.value);
 
   const isDeploying = useSignal(false);
