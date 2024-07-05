@@ -109,6 +109,10 @@ export const useRenameProject = routeAction$(
   }),
 );
 
+export const loadLogs = server$(async (slug: string) => {
+  return getLogs(slug);
+});
+
 export default component$(() => {
   const renameAction = useRenameProject();
 
@@ -122,7 +126,9 @@ export default component$(() => {
     return <NotFound />;
   }
 
-  const logs = useLogs();
+  const initialLogs = useLogs();
+
+  const logs = useSignal(initialLogs.value);
 
   const isDeploying = useSignal(false);
 
@@ -171,6 +177,8 @@ export default component$(() => {
         streamResponse.value = [...streamResponse.value, data];
         await logDeployment(project.value.slug, [data]);
       }
+
+      logs.value = await loadLogs(project.value.slug);
     } catch (err) {
       let message = "Something went wrong!";
 
