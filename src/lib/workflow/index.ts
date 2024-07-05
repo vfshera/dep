@@ -6,7 +6,7 @@ import YAML from "yaml";
 import fg from "fast-glob";
 import { z } from "@builder.io/qwik-city";
 
-import simpleGit from "simple-git";
+import simpleGit, { CheckRepoActions } from "simple-git";
 
 const runJobSchema = z.object({
   name: z.string(),
@@ -198,7 +198,7 @@ export async function getLastCommitInfo(projectPath: string) {
   const git = simpleGit(projectPath);
 
   try {
-    const isRepo = await git.checkIsRepo();
+    const isRepo = await git.checkIsRepo(CheckRepoActions.IS_REPO_ROOT);
 
     if (isRepo) {
       const log = await git.log({ maxCount: 1 });
