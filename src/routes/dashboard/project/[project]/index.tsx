@@ -61,8 +61,6 @@ export const runActions = server$(async function* (
   if (!BASE_DIR) {
     const message = `Base directory not found! Please set ${WORKING_DIR_KEY} in the .env file!`;
 
-    console.log(message);
-
     yield { type: "SERVER_ERROR", value: message };
 
     return;
@@ -75,7 +73,6 @@ export const runActions = server$(async function* (
   if (!res.ok) {
     const message = `Project directory not found!`;
 
-    console.log(message);
     yield { type: "SERVER_ERROR", value: message };
 
     return;
@@ -185,8 +182,6 @@ export default component$(() => {
       if (err instanceof Error) {
         message = err.message;
       }
-
-      console.log(message);
 
       toast.error(message);
     }
