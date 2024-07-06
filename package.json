@@ -20,7 +20,7 @@
     "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "db:generate": "drizzle-kit generate:sqlite",
+    "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx ./src/db/migrate.ts",
     "drizzle:studio": "drizzle-kit studio --host 127.0.0.1",
     "fmt": "prettier --write .",
@@ -59,8 +59,7 @@
     "@auth/core": "^0.34.1",
     "@builder.io/qwik": "1.5.7",
     "@builder.io/qwik-auth": "0.2.2",
-    "@builder.io/qwik-city": "1.5.7",
-    "@builder.io/qwik-react": "0.5.4"
+    "@builder.io/qwik-city": "1.5.7"
   },
   "dependencies": {
     "@fastify/compress": "^7.0.3",
@@ -73,7 +72,6 @@
     "fast-glob": "^3.3.2",
     "fastify": "^4.28.1",
     "fastify-plugin": "^4.5.1",
-    "framer-motion": "^11.2.13",
     "generate-api-key": "^1.0.2",
     "mini-svg-data-uri": "^1.4.4",
     "pino-roll": "^1.1.0",
