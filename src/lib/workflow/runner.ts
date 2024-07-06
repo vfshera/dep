@@ -133,6 +133,8 @@ async function* runCommand({
     env: { ...process.env, ...(depEnv || {}) },
   });
 
+  childProcess.setMaxListeners(15);
+
   for await (const data of childProcess.stdout) {
     yield logUtils.data(
       redactEnvVariables(data.toString().trim(), depEnv || {}),
@@ -154,4 +156,14 @@ async function* runCommand({
       `Command "${command}" failed with exit code ${exitCode}.`,
     );
   }
+}
+
+const existingUncaughtExceptionListeners =
+  process.listeners("uncaughtException");
+
+if (existingUncaughtExceptionListeners.length === 0) {
+  process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
+    // Handle the exception (logging, cleanup, etc.)
+  });
 }
