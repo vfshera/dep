@@ -25,10 +25,10 @@ importers:
         version: 16.4.5
       drizzle-orm:
         specifier: ^0.31.2
-        version: 0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(react@18.2.0)
+        version: 0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(postgres@3.4.4)(react@18.2.0)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(react@18.2.0))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(postgres@3.4.4)(react@18.2.0))(zod@3.23.8)
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2
@@ -47,6 +47,9 @@ importers:
       pino-roll:
         specifier: ^1.1.0
         version: 1.1.0
+      postgres:
+        specifier: ^3.4.4
+        version: 3.4.4
       qwik-sonner:
         specifier: ^1.0.3
         version: 1.0.3
@@ -2549,6 +2552,10 @@ packages:
     resolution: {integrity: sha512-0vzE+lAiG7hZl1/9I8yzKLx3aR9Xbof3fBHKunvMfOCYAtMhrsnccJY2iTURb9EZd5+pLuiNV9/c/GZJOHsgIw==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postgres@3.4.4:
+    resolution: {integrity: sha512-IbyN+9KslkqcXa8AO9fxpk97PA4pzewvpi2B3Dwy9u4zpV32QicaEdgmF3eSQUzdRk7ttDHQejNgAEr4XoeH4A==}
+    engines: {node: '>=12'}
+
   preact-render-to-string@5.2.3:
     resolution: {integrity: sha512-aPDxUn5o3GhWdtJtW0svRC2SS/l8D9MAgo2+AWml+BhDImb27ALf04Q2d+AHqUUOc6RdSXFIBVa2gxzgMKgtZA==}
     peerDependencies:
@@ -4366,16 +4373,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(react@18.2.0):
+  drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(postgres@3.4.4)(react@18.2.0):
     optionalDependencies:
       '@types/better-sqlite3': 7.6.11
       '@types/react': 18.3.3
       better-sqlite3: 11.1.2
+      postgres: 3.4.4
       react: 18.2.0
 
-  drizzle-zod@0.5.1(drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(react@18.2.0))(zod@3.23.8):
+  drizzle-zod@0.5.1(drizzle-orm@0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(postgres@3.4.4)(react@18.2.0))(zod@3.23.8):
     dependencies:
-      drizzle-orm: 0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(react@18.2.0)
+      drizzle-orm: 0.31.2(@types/better-sqlite3@7.6.11)(@types/react@18.3.3)(better-sqlite3@11.1.2)(postgres@3.4.4)(react@18.2.0)
       zod: 3.23.8
 
   duplexify@3.7.1:
@@ -5737,6 +5745,8 @@ snapshots:
       nanoid: 3.3.7
       picocolors: 1.0.1
       source-map-js: 1.2.0
+
+  postgres@3.4.4: {}
 
   preact-render-to-string@5.2.3(preact@10.11.3):
     dependencies:

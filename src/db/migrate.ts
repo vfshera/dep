@@ -1,10 +1,20 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import "dotenv/config";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
 
-const sqlite = new Database("sqlite.db");
+import postgres from "postgres";
+import schema from "./schema";
 
-const db = drizzle(sqlite);
+const client = postgres({
+  database: process.env.DB_NAME as string,
+  host: process.env.DB_HOST as string,
+  user: process.env.DB_USER as string,
+  password: process.env.DB_PASS as string,
+  max: 1,
+});
 
-// this will automatically run needed migrations on the database
-migrate(db, { migrationsFolder: "./drizzle" });
+await migrate(drizzle(client, { schema }), {
+  migrationsFolder: "./drizzle",
+});
+
+await client.end();
