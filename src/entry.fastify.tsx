@@ -11,7 +11,7 @@ import { type PlatformNode } from "@builder.io/qwik-city/middleware/node";
 import "dotenv/config";
 import Fastify from "fastify";
 import type { FastifyServerOptions } from "fastify";
-import { join } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import FastifyQwik from "./plugins/fastify-qwik";
 
@@ -20,9 +20,9 @@ declare global {
 }
 
 // Directories where the static assets are located
-const distDir = join(fileURLToPath(import.meta.url), "..", "..", "dist");
+const distDir = path.join(fileURLToPath(import.meta.url), "..", "..", "dist");
 
-const buildDir = join(distDir, "build");
+const buildDir = path.join(distDir, "build");
 
 // Allow for dynamic port and host
 const PORT = parseInt(process.env.PORT ?? "3000");
@@ -40,10 +40,15 @@ if (process.stdout.isTTY) {
   };
 } else {
   fastifyOptions.logger = {
-    level: "warn",
+    level: "info",
     transport: {
       target: "pino-roll",
-      options: { frequency: "daily", mkdir: true, size: "10m" },
+      options: {
+        frequency: "daily",
+        mkdir: true,
+        size: "10m",
+        file: path.join("server-logs", "server-log"),
+      },
     },
   };
 }
@@ -59,7 +64,14 @@ const start = async () => {
   await fastify.register(FastifyQwik, { distDir, buildDir });
 
   // Start the fastify server
-  await fastify.listen({ port: PORT, host: HOST });
+  await fastify.listen({ port: PORT, host: HOST }, (err, address) => {
+    if (err) {
+      fastify.log.error(err);
+      process.exit(1);
+    }
+
+    fastify.log.info(`Server listening on ${address}`);
+  });
 };
 
 start();
