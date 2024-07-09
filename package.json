@@ -21,7 +21,7 @@
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx ./src/db/migrate.ts",
+    "db:migrate": "cross-env DB_MIGRATING=true tsx ./src/db/migrate.ts",
     "drizzle:studio": "drizzle-kit studio --host 127.0.0.1",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
@@ -45,6 +45,7 @@
     "@typescript-eslint/eslint-plugin": "7.14.1",
     "@typescript-eslint/parser": "7.14.1",
     "autoprefixer": "^10.4.19",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.22.8",
     "eslint": "8.57.0",
     "eslint-config-prettier": "^9.1.0",
@@ -65,6 +66,7 @@
     "@fastify/static": "^7.0.4",
     "@fontsource/geist-sans": "^5.0.3",
     "dotenv": "^16.4.5",
+    "dotenv-expand": "^11.0.6",
     "drizzle-orm": "^0.31.2",
     "drizzle-zod": "^0.5.1",
     "fast-glob": "^3.3.2",
@@ -83,6 +85,7 @@
     "tailwind-merge": "^2.3.0",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "yaml": "^2.4.5"
+    "yaml": "^2.4.5",
+    "zod": "^3.23.8"
   }
 }

@@ -1,5 +1,5 @@
 import { desc, eq, or } from "drizzle-orm";
-import db from ".";
+import { db } from ".";
 import type { InsertProject } from "./schema";
 import { projects } from "./schema";
 

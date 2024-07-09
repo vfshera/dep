@@ -20,7 +20,3 @@ export type InsertProject = Omit<
 >;
 
 export type SelectProject = typeof projects.$inferSelect;
-
-export default {
-  projects,
-};
