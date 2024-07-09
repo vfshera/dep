@@ -1,6 +1,6 @@
 # Dep
 
-Dep is a personal deployment tool designed to simplify the process of updating cPanel sites.
+Designed to simplify the process of deploying CPANEL sites.
 
 ## How It Works
 
