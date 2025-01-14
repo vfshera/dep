@@ -194,7 +194,13 @@ export default component$(() => {
             />
 
             {createAction.value?.failed && (
-              <Errors errors={createAction.value.fieldErrors.name} />
+              <Errors
+                errors={
+                  createAction.value.fieldErrors.name
+                    ? [createAction.value.fieldErrors.name]
+                    : undefined
+                }
+              />
             )}
 
             <select
@@ -221,7 +227,13 @@ export default component$(() => {
               ))}
             </select>
             {createAction.value?.failed && (
-              <Errors errors={createAction.value.fieldErrors.dir} />
+              <Errors
+                errors={
+                  createAction.value.fieldErrors.dir
+                    ? [createAction.value.fieldErrors.dir]
+                    : undefined
+                }
+              />
             )}
 
             {!createAction.value?.failed &&

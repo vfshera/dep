@@ -7,7 +7,7 @@ import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
-
+const IGNORED_QWIK_PREFIXED_PACKAGES=["qwik-sonner"]
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
   dependencies: PkgDep;
@@ -80,7 +80,7 @@ function errorOnDuplicatesPkgDeps(
   );
 
   // include any known qwik packages
-  const qwikPkg = Object.keys(dependencies).filter((value) =>
+  const qwikPkg = Object.keys(dependencies).filter((value) => !IGNORED_QWIK_PREFIXED_PACKAGES.includes(value)).filter((value) =>
     /qwik/i.test(value),
   );
 
